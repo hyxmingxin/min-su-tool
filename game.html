@@ -14,26 +14,42 @@ body{background:#fef5ee;font-family:-apple-system,BlinkMacSystemFont,"Helvetica 
 /* ====== TITLE ====== */
 #tp{background:linear-gradient(#ffefe5,#fce4d6,#ffebe0,#fff8f0)}
 .tb{
-  width:130px;height:130px;background:#fff;border-radius:50%;position:relative;
-  margin-bottom:14px;box-shadow:0 8px 30px rgba(139,90,43,0.08);
+  width:150px;height:150px;background:#fff;border-radius:50%;
+  position:relative;margin-bottom:18px;
+  box-shadow:0 8px 35px rgba(139,90,43,0.1);
   flex-shrink:0;
+  animation:tbFloat 3s ease-in-out infinite;
 }
-.tb .e{position:absolute;width:38px;height:38px;background:#f5e0cc;border-radius:50%;top:-10px}
-.tb .e.l{left:14px}.tb .e.r{right:14px}
-.tb .e::after{content:'';position:absolute;width:19px;height:19px;background:#ffb5b5;border-radius:50%;top:10px;left:10px}
-.tb .ey{position:absolute;width:12px;height:14px;background:#3d2b1f;border-radius:50%;top:50px}
-.tb .ey.l{left:32px}.tb .ey.r{right:32px}
-.tb .ey::after{content:'';position:absolute;width:4px;height:5px;background:#fff;border-radius:50%;top:3px;left:6px}
-.tb .b{position:absolute;width:22px;height:12px;background:rgba(255,150,150,0.3);border-radius:50%;top:62px}
-.tb .b.l{left:18px}.tb .b.r{right:18px}
-.tb .m{position:absolute;width:5px;height:5px;border-radius:50%;background:#3d2b1f;top:68px;left:62px}
+@keyframes tbFloat{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-8px)}
+}
+/* ears */
+.tb .e{position:absolute;width:40px;height:40px;background:#f5ece4;border-radius:50%;top:-6px}
+.tb .e.l{left:12px}.tb .e.r{right:12px}
+.tb .e::after{content:'';position:absolute;width:20px;height:20px;background:#ffcdd2;border-radius:50%;top:10px;left:10px}
+/* big eyes */
+.tb .ey{position:absolute;width:18px;height:20px;background:#3d2b1f;border-radius:50%;top:52px}
+.tb .ey.l{left:34px}.tb .ey.r{right:34px}
+.tb .ey::after{content:'';position:absolute;width:8px;height:9px;background:#fff;border-radius:50%;top:3px;left:5px}
+/* blush */
+.tb .b{position:absolute;width:28px;height:14px;background:rgba(255,150,150,0.35);border-radius:50%;top:70px}
+.tb .b.l{left:16px}.tb .b.r{right:16px}
+/* smile */
+.tb .sm{position:absolute;width:14px;height:7px;border-bottom:2.5px solid #3d2b1f;border-radius:0 0 14px 14px;top:78px;left:50%;margin-left:-7px}
+/* tall chef hat */
 .tb .ht{
-  position:absolute;width:82px;height:38px;background:#fff;border-radius:40px 40px 6px 6px;
-  top:-18px;left:24px;box-shadow:0 2px 10px rgba(0,0,0,0.04);
+  position:absolute;width:92px;height:52px;
+  background:#fff;border-radius:46px 46px 6px 6px;
+  top:-30px;left:29px;
+  box-shadow:0 3px 12px rgba(0,0,0,0.04);
 }
-.tb .ht::after{content:'';position:absolute;width:50px;height:7px;background:#ffb5b5;border-radius:4px;top:8px;left:16px}
-.tb .ht2{position:absolute;width:30px;height:22px;background:#fff;border-radius:50%;top:-30px;left:50px;box-shadow:0 2px 6px rgba(0,0,0,0.04)}
-.tb .bd{width:50px;height:30px;background:#fff;border-radius:0 0 25px 25px;position:absolute;bottom:-24px;left:40px}
+.tb .ht::before{content:'';position:absolute;width:76px;height:28px;border-radius:38px 38px 0 0;top:-8px;left:8px;background:rgba(0,0,0,0.015)}
+.tb .ht::after{content:'';position:absolute;width:58px;height:8px;background:#ff8a8a;border-radius:4px;bottom:8px;left:50%;margin-left:-29px}
+/* pompom */
+.tb .ht2{position:absolute;width:34px;height:24px;background:#fff;border-radius:50%;top:-42px;left:58px;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+/* body */
+.tb .bd{position:absolute;width:56px;height:34px;background:#fff;border-radius:0 0 28px 28px;bottom:-28px;left:50%;margin-left:-28px;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
 
 .t-s{font-size:12px;color:#bcaba0;letter-spacing:2px;margin-bottom:4px;text-align:center}
 .t-h{font-size:28px;font-weight:700;color:#5d4037;letter-spacing:3px;margin-bottom:4px;text-align:center}
@@ -89,7 +105,7 @@ body{background:#fef5ee;font-family:-apple-system,BlinkMacSystemFont,"Helvetica 
     <div class="e l"></div><div class="e r"></div>
     <div class="ey l"></div><div class="ey r"></div>
     <div class="b l"></div><div class="b r"></div>
-    <div class="m"></div>
+    <div class="sm"></div>
     <div class="ht"></div><div class="ht2"></div>
     <div class="bd"></div>
   </div>
@@ -250,7 +266,7 @@ function dwF(){
   ctx.fillStyle='#d7ccc8';ctx.font='10px sans-serif';ctx.fillText('1/3 · 煎饼',W/2,56)
 }
 function tF(){
-  const f=G.f;if(f.fl||f.dn)return;S.ok()
+  const f=G.f;if(f.fl||f.dn||(G.ov&&G.ov.ac))return;S.ok()
   const vl=Math.abs(f.t);let em,msg,sc
   if(vl>=P1&&vl<=P2){em='🌟';msg='完美翻面！';sc=100;S.pf()}else if(vl>=F1&&vl<=F2){em='👍';msg='还不错~';sc=60;S.gd()}else{em='😅';msg='火候不对...';sc=10;S.ms()}
   f.ts+=sc;f.fc++;f.sp=(0.5+Math.random()*0.12)*(1+f.fc*0.08);f.fl=true;S.fl()
@@ -332,7 +348,7 @@ function dwR(){
   ctx.fillStyle='#d7ccc8';ctx.font='10px sans-serif';ctx.fillText('3/3 · 卷起来',W/2,53)
 }
 function tR(){
-  const r=G.r;if(r.dn||r.hi>=r.to)return;S.ok()
+  const r=G.r;if(r.dn||r.hi>=r.to||(G.ov&&G.ov.ac))return;S.ok()
   const t=r.ta[r.hi],df=Math.abs(r.pr-t.x);let em,msg
   if(df<6){em='🌟';msg='完美！';t.pe=true;t.hi=true;S.rp()}else if(df<18){em='👍';msg='还行~';t.hi=true;S.gd()}else{em='😅';msg='歪了...';t.hi=false;S.rt()}
   r.hi++
