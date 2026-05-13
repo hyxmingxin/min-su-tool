@@ -14,7 +14,7 @@ body{background:#fef5ee;font-family:-apple-system,BlinkMacSystemFont,"Helvetica 
 /* ====== TITLE ====== */
 #tp{background:linear-gradient(#ffefe5,#fce4d6,#ffebe0,#fff8f0)}
 .tb{
-  width:150px;height:150px;background:#fff;border-radius:50%;
+  width:130px;height:130px;background:#fff;border-radius:50%;
   position:relative;margin-bottom:18px;
   box-shadow:0 8px 35px rgba(139,90,43,0.1);
   flex-shrink:0;
@@ -25,31 +25,31 @@ body{background:#fef5ee;font-family:-apple-system,BlinkMacSystemFont,"Helvetica 
   50%{transform:translateY(-8px)}
 }
 /* ears */
-.tb .e{position:absolute;width:40px;height:40px;background:#f5ece4;border-radius:50%;top:-6px}
-.tb .e.l{left:12px}.tb .e.r{right:12px}
-.tb .e::after{content:'';position:absolute;width:20px;height:20px;background:#ffcdd2;border-radius:50%;top:10px;left:10px}
-/* big eyes */
-.tb .ey{position:absolute;width:18px;height:20px;background:#3d2b1f;border-radius:50%;top:52px}
-.tb .ey.l{left:34px}.tb .ey.r{right:34px}
-.tb .ey::after{content:'';position:absolute;width:8px;height:9px;background:#fff;border-radius:50%;top:3px;left:5px}
+.tb .e{position:absolute;width:38px;height:38px;background:#f5ece4;border-radius:50%;top:-8px}
+.tb .e.l{left:10px}.tb .e.r{right:10px}
+.tb .e::after{content:'';position:absolute;width:18px;height:18px;background:#ffcdd2;border-radius:50%;top:10px;left:10px}
+/* cute eyes */
+.tb .ey{position:absolute;width:14px;height:16px;background:#3d2b1f;border-radius:50%;top:48px}
+.tb .ey.l{left:30px}.tb .ey.r{right:30px}
+.tb .ey::after{content:'';position:absolute;width:6px;height:7px;background:#fff;border-radius:50%;top:3px;left:4px}
 /* blush */
-.tb .b{position:absolute;width:28px;height:14px;background:rgba(255,150,150,0.35);border-radius:50%;top:70px}
+.tb .b{position:absolute;width:24px;height:12px;background:rgba(255,150,150,0.35);border-radius:50%;top:62px}
 .tb .b.l{left:16px}.tb .b.r{right:16px}
 /* smile */
-.tb .sm{position:absolute;width:14px;height:7px;border-bottom:2.5px solid #3d2b1f;border-radius:0 0 14px 14px;top:78px;left:50%;margin-left:-7px}
+.tb .sm{position:absolute;width:12px;height:6px;border-bottom:2px solid #3d2b1f;border-radius:0 0 12px 12px;top:68px;left:50%;margin-left:-6px}
 /* tall chef hat */
 .tb .ht{
-  position:absolute;width:92px;height:52px;
-  background:#fff;border-radius:46px 46px 6px 6px;
-  top:-30px;left:29px;
+  position:absolute;width:86px;height:50px;
+  background:#fff;border-radius:43px 43px 6px 6px;
+  top:-28px;left:22px;
   box-shadow:0 3px 12px rgba(0,0,0,0.04);
 }
-.tb .ht::before{content:'';position:absolute;width:76px;height:28px;border-radius:38px 38px 0 0;top:-8px;left:8px;background:rgba(0,0,0,0.015)}
-.tb .ht::after{content:'';position:absolute;width:58px;height:8px;background:#ff8a8a;border-radius:4px;bottom:8px;left:50%;margin-left:-29px}
+.tb .ht::before{content:'';position:absolute;width:64px;height:24px;border-radius:32px 32px 0 0;top:-6px;left:11px;background:rgba(0,0,0,0.015)}
+.tb .ht::after{content:'';position:absolute;width:52px;height:8px;background:#ff8a8a;border-radius:4px;bottom:7px;left:50%;margin-left:-26px}
 /* pompom */
-.tb .ht2{position:absolute;width:34px;height:24px;background:#fff;border-radius:50%;top:-42px;left:58px;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+.tb .ht2{position:absolute;width:32px;height:20px;background:#fff;border-radius:50%;top:-38px;left:49px;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
 /* body */
-.tb .bd{position:absolute;width:56px;height:34px;background:#fff;border-radius:0 0 28px 28px;bottom:-28px;left:50%;margin-left:-28px;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+.tb .bd{position:absolute;width:52px;height:30px;background:#fff;border-radius:0 0 26px 26px;bottom:-26px;left:50%;margin-left:-26px;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
 
 .t-s{font-size:12px;color:#bcaba0;letter-spacing:2px;margin-bottom:4px;text-align:center}
 .t-h{font-size:28px;font-weight:700;color:#5d4037;letter-spacing:3px;margin-bottom:4px;text-align:center}
@@ -210,21 +210,21 @@ function re(){
   const c=G.c;c.t=12;c.is=[];c.st=0;c.px=200;c.tx=200;c.pa=[];c.co=0;c.mc=0;c.sc=0;c.dn=false
   const r=G.r;r.pr=35;r.hi=0;r.to=6;r.dn=false;r.ta=[];for(let i=0;i<r.to;i++)r.ta.push({x:45+(W-90)*(i+0.5)/r.to,hi:false,pe:false})
 }
-let _ovq=[]  // overlay 回调队列（替代 Promise）
+let _ovq=[]  // overlay 回调队列
 function ov(em,msg,sub,dur,cb){
-  G.ov={em,msg,sub,t:0,dur:dur||800,ac:true}
+  G.ov={em,msg,sub,t:_perfNow(),dur:dur||800,ac:true}
   if(typeof cb==='function')_ovq.push(cb)
 }
 function drawOv(){
   if(!G.ov||!G.ov.ac)return
-  G.ov.t+=G.dt
-  if(G.ov.t>=G.ov.dur/1000){
+  const el=_perfNow()-G.ov.t
+  if(el>=G.ov.dur){
     G.ov.ac=false
     const q=_ovq.slice();_ovq=[]
     for(let i=0;i<q.length;i++)q[i]()
     return
   }
-  const p=G.ov.t/(G.ov.dur/1000)  // 0~1 进度
+  const p=el/G.ov.dur  // 0~1 进度
   const a=Math.min(1,p*4);ctx.fillStyle=`rgba(0,0,0,${0.2*a})`;ctx.fillRect(0,0,W,H)
   const sc=0.8+0.2*(1-p*2);ctx.save();ctx.translate(W/2,H/2-20);ctx.scale(Math.max(0.1,sc),Math.max(0.1,sc));ctx.globalAlpha=a
   sh(20,0,5,'rgba(0,0,0,0.12)');ctx.fillStyle='#fff';roundRect(-65,-45,130,90,22);ctx.fill();ns()
@@ -280,7 +280,7 @@ function tF(){
   if(vl>=P1&&vl<=P2){em='🌟';msg='完美翻面！';sc=100;S.pf()}else if(vl>=F1&&vl<=F2){em='👍';msg='还不错~';sc=60;S.gd()}else{em='😅';msg='火候不对...';sc=10;S.ms()}
   f.ts+=sc;f.fc++;f.sp=(0.5+Math.random()*0.12)*(1+f.fc*0.08);f.fl=true;S.fl()
   ov(em,msg,sc>0?`+${sc} (${f.ts}/300)`:'',800,function(){
-    if(f.ts>=300){f.dn=true;G.sc[0]=300;S.sc();ov('🍳','煎饼通关！','300分',700,function(){G.st=1;G.s='catch';const c=G.c;c.t=12;c.is=[];c.st=0;c.px=200;c.tx=200;c.pa=[];c.co=0;c.mc=0;c.sc=0;c.dn=false})}
+    if(f.ts>=300){f.dn=true;G.sc[0]=300;S.sc();ov('🍳','煎饼通关！','300分',700,function(){G.st=1;G.s='catch';const c=G.c;c.t=12;c.is=[];c.st=0;c.px=200;c.tx=200;c.pa=[];c.co=0;c.mc=0;c.sc=0;c.dn=false;ov('🎯','接食材！','左右滑动接住食材',600)})}
     else{f.fl=false;f.ft=0}
   })
 }
@@ -295,7 +295,7 @@ function udC(dt){
       for(let j=0;j<10;j++)c.pa.push({x:it.x,y:py,vx:(Math.random()-.5)*150,vy:-60-Math.random()*120,l:1,c:it.c,p:it.p,r:2+Math.random()*4})}
     if(it.y>H+30){c.is.splice(i,1);c.co=0}}
   for(let i=c.pa.length-1;i>=0;i--){const p=c.pa[i];p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=350*dt;p.l-=dt;if(p.l<=0)c.pa.splice(i,1)}
-  c.t-=dt;if(!c.dn&&c.t<=0){c.dn=true;G.sc[1]=c.sc;S.sc();ov('🎯','时间到！',`${c.sc}分`,700,function(){G.st=2;G.s='roll';const r=G.r;r.pr=35;r.hi=0;r.to=6;r.dn=false;r.ta=[];for(let i=0;i<r.to;i++)r.ta.push({x:45+(W-90)*(i+0.5)/r.to,hi:false,pe:false})})}
+  c.t-=dt;if(!c.dn&&c.t<=0){c.dn=true;G.sc[1]=c.sc;S.sc();ov('🎯','时间到！',`${c.sc}分`,700,function(){G.st=2;G.s='roll';const r=G.r;r.pr=35;r.hi=0;r.to=6;r.dn=false;r.ta=[];for(let i=0;i<r.to;i++)r.ta.push({x:45+(W-90)*(i+0.5)/r.to,hi:false,pe:false});ov('🌯','卷起来！','点击对准标记逐段卷起',600)})}
 }
 function dwC(){
   const c=G.c
