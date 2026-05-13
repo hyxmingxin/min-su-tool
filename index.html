@@ -239,13 +239,23 @@ const room2Tab = document.getElementById('room2Tab')
 let currentRoom = 1
 let currentDoorPw = ''
 let currentRoomPw = ''
+// 每个房间独立存储文案
+const generated = { 1: null, 2: null }
 
-// 房间切换（清除上次生成的文案）
+// 房间切换
 function switchRoom(num) {
+  // 切走前保存当前房间文案
+  generated[currentRoom] = output.innerHTML || null
   currentRoom = num
   document.querySelectorAll('.room-tab').forEach(t => t.classList.toggle('active', t.dataset.room == num))
-  output.classList.remove('show')
-  output.innerHTML = ''
+  // 切过来后显示该房间的文案
+  if (generated[num]) {
+    output.innerHTML = generated[num]
+    output.classList.add('show')
+  } else {
+    output.classList.remove('show')
+    output.innerHTML = ''
+  }
 }
 room1Tab.addEventListener('click', () => switchRoom(1))
 room2Tab.addEventListener('click', () => switchRoom(2))
@@ -288,6 +298,7 @@ genBtn.addEventListener('click', () => {
     .replace(door, `<span class="hl">${door}</span>`)
     .replace(room, `<span class="hl">${room}</span>`)
   output.classList.add('show')
+  generated[currentRoom] = output.innerHTML
 })
 
 // 复制
