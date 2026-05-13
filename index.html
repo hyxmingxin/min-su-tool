@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>白熊民宿 · 密码生成器</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;
+  background:#f5f2ed;color:#2c2824;padding:20px;min-height:100vh;
+}
+.container{max-width:860px;margin:0 auto}
+h1{font-size:22px;font-weight:600;color:#1a1510;margin-bottom:4px;letter-spacing:1px}
+.sub{font-size:13px;color:#8a7a6a;margin-bottom:20px}
+
+/* 房间选择 */
+.room-tabs{display:flex;gap:12px;margin-bottom:20px}
+.room-tab{
+  flex:1;padding:14px;text-align:center;border-radius:10px;
+  font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;
+  background:#fff;color:#8a7a6a;border:2px solid transparent;
+  box-shadow:0 2px 8px rgba(0,0,0,0.04);
+}
+.room-tab.active{background:#2c2824;color:#fff;border-color:#2c2824}
+.room-tab:active{opacity:0.7}
+
+/* 输入区 */
+.input-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.input-group{background:#fff;border-radius:12px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,0.04)}
+.input-group label{font-size:13px;font-weight:600;color:#4a3f36;display:block;margin-bottom:8px}
+.input-group label span{font-weight:400;color:#8a7a6a;font-size:11px}
+.input-group textarea{
+  width:100%;height:120px;border:1px solid #e8e0d6;border-radius:8px;
+  padding:12px;font-size:13px;color:#2c2824;resize:vertical;
+  font-family:inherit;line-height:1.6;background:#faf8f6;
+  transition:border-color 0.2s;
+}
+.input-group textarea:focus{outline:none;border-color:#c8a87c}
+.input-group .extracted{
+  margin-top:10px;padding:10px 12px;background:#faf8f6;border-radius:6px;
+  font-size:15px;color:#1a1510;display:none;
+}
+.input-group .extracted .pw{font-weight:700;color:#c0392b;letter-spacing:2px;font-size:18px}
+.input-group .extracted.show{display:flex;align-items:center;gap:8px}
+
+/* 按钮 */
+.btn-row{display:flex;gap:12px;margin-bottom:16px}
+.btn{
+  flex:1;padding:14px;border:none;border-radius:10px;font-size:15px;font-weight:600;
+  cursor:pointer;transition:opacity 0.2s;
+}
+.btn:active{opacity:0.7}
+.btn-primary{background:#2c2824;color:#fff}
+.btn-copy{background:#c8a87c;color:#fff}
+
+/* 输出 */
+.output{
+  background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.04);
+  white-space:pre-wrap;font-size:14px;line-height:1.9;color:#2c2824;
+  min-height:200px;display:none;font-family:inherit;
+}
+.output.show{display:block}
+.output .hl{color:#c0392b;font-weight:700}
+
+@media(max-width:600px){
+  .input-row{grid-template-columns:1fr}
+  body{padding:16px}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🐻 白熊民宿 · 密码文案生成器</h1>
+  <p class="sub">选择房间 → 粘贴两个App的通知 → 自动生成</p>
+
+  <!-- 房间选择 -->
+  <div class="room-tabs">
+    <div class="room-tab active" data-room="1" id="room1Tab">🏠 001号房</div>
+    <div class="room-tab" data-room="2" id="room2Tab">🏠 002号房</div>
+  </div>
+
+  <!-- 密码输入 -->
+  <div class="input-row">
+    <div class="input-group">
+      <label>🚪 204大门通知 <span>（Ukey智能锁）</span></label>
+      <textarea id="doorInput" placeholder="粘贴Ukey通知…"></textarea>
+      <div class="extracted" id="doorResult">
+        <span>🔑 大门密码：</span>
+        <span class="pw" id="doorPw"></span>
+      </div>
+    </div>
+    <div class="input-group">
+      <label>🚪 房间门通知 <span>（通通锁）</span></label>
+      <textarea id="roomInput" placeholder="粘贴通通锁通知…"></textarea>
+      <div class="extracted" id="roomResult">
+        <span>🔑 房间密码：</span>
+        <span class="pw" id="roomPw"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" id="genBtn">⚡ 生成文案</button>
+    <button class="btn btn-copy" id="copyBtn">📋 复制文案</button>
+  </div>
+
+  <div class="output" id="output"></div>
+</div>
+
+<script>
+// ===== 两套文案模板 =====
+const TPL = {
+  1: `✅欢迎入住～愿你在此疗愈身心、满血充电！祝您入住愉快！
+
+📞房东联系（微信同号）
+▸主号：13986282682
+▸备用：13886191182（主号未接通打这个）
+▸房东就在旁边，有需求随时找！
+
+🚫入住须知
+▸禁带宠物
+▸暂不接待12岁以下、70岁以上客人
+▸最多2人入住
+
+⏰入住退房
+▸入住：14:00后
+▸退房：12:00前｜退房后麻烦发消息告知
+
+🔒密码锁操作（两道门都是密码锁）
+▸204大门：{DOOR_PW}
+✔手背轻贴亮灯再输，输完按#结束
+✔输错按*删除，别着急避免误输
+▸001号门：{ROOM_PW}
+
+🛁房间设施使用
+▸热水器：提前通电，15分钟左右烧热即可用
+▸吹风机：面盆柜内
+▸投影：有优酷酷喵会员，登不上找房东
+▸WiFi：名称白熊｜密码bxklbw1990@.
+
+🌿阳台须知
+▸有隐藏纱门，配备晾衣架可晾晒衣物
+▸有自动浇水系统，花草勿动（不浇水不施肥）
+▸周边小吃/景点，想要推荐随时问
+
+📌注意事项
+▸请勿损坏房内外设施设备及墙面，爱护绿植
+▸有任何不足，随时反馈，我们及时整改妥善处理
+❗️ ❗️ 人不在房间请关闭好阳台门，附近会有野猫捣乱的哦 ❗️ ❗️`,
+
+  2: `✅欢迎入住～愿你在此疗愈身心、满血充电！祝您入住愉快！
+
+📞房东联系（微信同号）
+▸主号：13986282682
+▸备用：13886191182（主号未接通打这个）
+▸房东就在隔壁，有需求随时找！
+
+🚫入住须知
+▸禁带宠物
+▸暂不接待12岁以下、70岁以上客人
+▸最多2人入住
+
+⏰入住退房
+▸入住：14:00后
+▸退房：12:00前｜退房后麻烦发消息告知
+
+🔒密码锁操作（两道门都是密码锁）
+▸204大门：{DOOR_PW}
+✔手背轻贴亮灯再输，输完按#结束
+✔输错按*删除，别着急避免误输
+▸002号门：{ROOM_PW}
+
+🛁房间设施使用
+▸热水器：提前通电，15分钟左右烧热即可用
+▸吹风机：面盆柜内
+▸洗衣机：阳台有｜房东阿姨12:00-14:30可能从阳台侧门进出使用，贵重物品关好阳台门；续住需午睡可联系协调
+▸电视：有优酷酷喵会员，登不上找房东
+▸WiFi：名称白熊｜密码bxklbw1990@.
+
+🌿阳台须知
+▸有隐藏纱门，灯串开关在墙面
+▸配晾衣架，可晾晒衣物
+▸有自动浇水系统，花草勿动（不浇水不施肥）
+▸爱护绿植，禁止损坏
+
+📌注意事项
+▸最多2人入住，房间设施/墙面请勿损坏
+▸退房请发消息告知房东
+▸有任何不足，随时反馈，我们及时整改
+▸周边小吃/景点，想要推荐随时问！
+❗️ ❗️ 人不在房间请关闭好阳台门，附近会有野猫捣乱的哦 ❗️ ❗️`
+}
+
+// 提取密码
+function extractPassword(text, isDoor) {
+  if (!text) return ''
+  // 大门（Ukey）：提取"开锁码："后面的内容，或所有空格分隔的数字组合
+  if (isDoor) {
+    // 优先找"开锁码"后面的
+    const match = text.match(/开锁码[：:]\s*([\d\s]+)/)
+    if (match) return match[1].trim().replace(/\s+/g, ' ')
+    // 找所有空格分隔的数字组合（如 9393 4316 9200 5）
+    const grouped = text.match(/\d{4}\s+\d{4}\s+\d{4}\s+\d/)
+    if (grouped) return grouped[0].trim()
+  }
+  // 房间门（通通锁）：纯数字 6位以上
+  const longDigits = text.match(/\d{6,}/)
+  if (longDigits) return longDigits[0]
+  // 通用：空格分隔的多组数字
+  const grouped = text.match(/\d{4}\s+\d{4}\s+\d{3,}/)
+  if (grouped) return grouped[0].trim()
+  const digits = text.match(/\d{4,}/)
+  if (digits) return digits[0]
+  return ''
+}
+
+// DOM
+const doorInput = document.getElementById('doorInput')
+const roomInput = document.getElementById('roomInput')
+const doorResult = document.getElementById('doorResult')
+const roomResult = document.getElementById('roomResult')
+const doorPw = document.getElementById('doorPw')
+const roomPw = document.getElementById('roomPw')
+const output = document.getElementById('output')
+const genBtn = document.getElementById('genBtn')
+const copyBtn = document.getElementById('copyBtn')
+const room1Tab = document.getElementById('room1Tab')
+const room2Tab = document.getElementById('room2Tab')
+
+let currentRoom = 1
+let currentDoorPw = ''
+let currentRoomPw = ''
+
+// 房间切换
+room1Tab.addEventListener('click', () => {
+  currentRoom = 1
+  room1Tab.classList.add('active')
+  room2Tab.classList.remove('active')
+})
+room2Tab.addEventListener('click', () => {
+  currentRoom = 2
+  room2Tab.classList.add('active')
+  room1Tab.classList.remove('active')
+})
+
+// 实时提取
+function onInput() {
+  currentDoorPw = extractPassword(doorInput.value, true)
+  currentRoomPw = extractPassword(roomInput.value, false)
+
+  if (currentDoorPw) {
+    doorPw.textContent = currentDoorPw
+    doorResult.classList.add('show')
+  } else {
+    doorResult.classList.remove('show')
+  }
+  if (currentRoomPw) {
+    roomPw.textContent = currentRoomPw
+    roomResult.classList.add('show')
+  } else {
+    roomResult.classList.remove('show')
+  }
+}
+
+doorInput.addEventListener('input', onInput)
+roomInput.addEventListener('input', onInput)
+
+// 生成
+genBtn.addEventListener('click', () => {
+  if (!currentDoorPw && !currentRoomPw) {
+    alert('请先粘贴密码通知')
+    return
+  }
+  const door = currentDoorPw || '❌未识别'
+  const room = currentRoomPw || '❌未识别'
+  let text = TPL[currentRoom]
+    .replace('{DOOR_PW}', door)
+    .replace('{ROOM_PW}', room)
+
+  output.innerHTML = text
+    .replace(door, `<span class="hl">${door}</span>`)
+    .replace(room, `<span class="hl">${room}</span>`)
+  output.classList.add('show')
+})
+
+// 复制
+copyBtn.addEventListener('click', () => {
+  const text = output.textContent
+  if (!text) return
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => {
+      alert('✅ 已复制，去微信粘贴发给客人吧！')
+    }).catch(() => fallbackCopy(text))
+  } else {
+    fallbackCopy(text)
+  }
+})
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea')
+  ta.value = text
+  ta.style.position = 'fixed'
+  ta.style.opacity = '0'
+  document.body.appendChild(ta)
+  ta.select()
+  document.execCommand('copy')
+  document.body.removeChild(ta)
+  alert('✅ 已复制，去微信粘贴发给客人吧！')
+}
+</script>
+</body>
+</html>
