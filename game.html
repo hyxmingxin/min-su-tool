@@ -169,7 +169,7 @@ const B={_p:false,_t:0,_b:0,_g:null,_n:[
   {f:659,d:0.22},{f:587,d:0.22},{f:523,d:0.44},{f:440,d:0.22},
   {f:523,d:0.22},{f:659,d:0.22},{f:784,d:0.44},{f:1047,d:0.44},
   {f:784,d:0.22},{f:659,d:0.22},{f:587,d:0.22},{f:523,d:0.44},
-  {f:440,d:0.22},{f:523,d:0.22},{f:587,d:0.44},{null,d:0.22},
+  {f:440,d:0.22},{f:523,d:0.22},{f:587,d:0.44},{f:null,d:0.22},
 ]}
 B.go=function(){if(!S._)return;this._p=true;this._t=S._.currentTime+0.05;this._b=0;this._g=S._.createGain();this._g.gain.value=0.08;this._g.connect(S._.destination)}
 B.st=function(){this._p=false}
@@ -382,6 +382,8 @@ function lp(t){
 
 // ====== BOOT ======
 function startGame(){
+  // 防重复触发（移动端 touchend + click 可能都触发）
+  if(!document.getElementById('tp').classList.contains('on'))return
   S.go();S.ok();S.cl();B.go();sz()
   document.getElementById('tp').classList.remove('on')
   document.getElementById('gp').classList.add('on')
