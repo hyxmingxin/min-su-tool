@@ -96,6 +96,52 @@ S.fanfare = function() { [523,659,784,1047].forEach((f,i)=>this.tone(f,0.25,'sin
 S.click = function() { this.tone(600,0.04,'sine',0.25) }
 
 // ==============================
+//  BGM  (cute Japanese-style pentatonic loop)
+// ==============================
+const BGM = {
+  _playing: false, _nextT: 0, _beat: 0, _gain: null,
+  // C5 D5 E5 G5 E5 D5 C5 A4  ·  C5 G5 E5 D5 C5 A4 C5 pause
+  _notes: [
+    {f:523,d:0.22},{f:587,d:0.22},{f:659,d:0.22},{f:784,d:0.44},
+    {f:659,d:0.22},{f:587,d:0.22},{f:523,d:0.44},{f:440,d:0.22},
+    {f:523,d:0.22},{f:659,d:0.22},{f:784,d:0.44},{f:1047,d:0.44},
+    {f:784,d:0.22},{f:659,d:0.22},{f:587,d:0.22},{f:523,d:0.44},
+    {f:440,d:0.22},{f:523,d:0.22},{f:587,d:0.44},{null,d:0.22},
+  ],
+  start() {
+    if (!S._ctx) return
+    this._playing = true; this._nextT = S._ctx.currentTime + 0.05; this._beat = 0
+    this._gain = S._ctx.createGain()
+    this._gain.gain.value = 0.08; this._gain.connect(S._g)
+  },
+  stop() { this._playing = false },
+  update() {
+    if (!this._playing || !S._ctx) return
+    const now = S._ctx.currentTime
+    while (this._nextT < now + 0.5) {
+      const note = this._notes[this._beat % this._notes.length]
+      if (note && note.f) {
+        const o = S._ctx.createOscillator(), g = S._ctx.createGain()
+        o.type = 'triangle'; o.frequency.value = note.f
+        g.gain.setValueAtTime(0.12, this._nextT)
+        g.gain.linearRampToValueAtTime(0.08, this._nextT + note.d*0.3)
+        g.gain.exponentialRampToValueAtTime(0.001, this._nextT + note.d)
+        o.connect(g); g.connect(this._gain)
+        o.start(this._nextT); o.stop(this._nextT + note.d + 0.05)
+        // 2nd harmonic (soft)
+        const o2 = S._ctx.createOscillator(), g2 = S._ctx.createGain()
+        o2.type = 'sine'; o2.frequency.value = note.f * 2
+        g2.gain.setValueAtTime(0.03, this._nextT)
+        g2.gain.exponentialRampToValueAtTime(0.001, this._nextT + note.d)
+        o2.connect(g2); g2.connect(this._gain)
+        o2.start(this._nextT); o2.stop(this._nextT + note.d + 0.05)
+      }
+      this._nextT += 0.28; this._beat++
+    }
+  }
+}
+
+// ==============================
 //  COLORS & UTILITIES
 // ==============================
 const C = {
@@ -161,7 +207,7 @@ const INGREDIENTS = [
   {name:'星星', emoji:'✨', color:'#ffd700', hl:'#fff8e1', pts:15, r:10},
 ]
 
-const FRY_Z1 = 0.30, FRY_Z2 = 0.54, FRY_P1 = 0.37, FRY_P2 = 0.47
+const FRY_Z1 = 0.30, FRY_Z2 = 0.54, FRY_P1 = 0.39, FRY_P2 = 0.45
 
 function resetG() {
   G.state = 'fry'; G.stage = 0; G.scores = [0,0,0]; G.total = 0; G.transAlpha = 0
@@ -173,9 +219,8 @@ function resetG() {
 // ==============================
 function initFry() {
   const f = G.f
-  f.t = 0; f.speed = 0.55 + Math.random()*0.15; f.attempts = 0; f.best = 0
-  f.flipT = 0; f.flipping = false; f.done = false
-  f.bubbles = []
+  f.t = 0; f.speed = 0.5 + Math.random()*0.12; f.attempts = 0; f.totalScore = 0; f.flipCount = 0
+  f.flipT = 0; f.flipping = false; f.done = false; f.bubbles = []
 }
 function updateFry(dt) {
   const f = G.f
@@ -305,10 +350,10 @@ function drawFry() {
   // HUD
   ctx.fillStyle = '#8d6e63'; ctx.font = '14px sans-serif'; ctx.textAlign = 'center'
   ctx.fillStyle = '#8d6e63'; ctx.font = '13px sans-serif'; ctx.textAlign = 'center'
-  const bestStr = f.best>0 ? `最佳: ${f.best}分  ` : ''
-  ctx.fillText(`${bestStr}👆 点击翻面  ${f.best>=100?'✅ 完美通过!':''}`, W/2, H-38)
+  const target = 300
+  ctx.fillText(`🎯 ${Math.min(f.totalScore, target)}/${target}`, W/2, H-38)
   ctx.fillStyle = '#bcaaa4'; ctx.font = '12px sans-serif'
-  ctx.fillText('多翻几次，到🌟完美区域为止！', W/2, H-14)
+  ctx.fillText('👆 点击翻面 累计300分过关  (速度会越来越快)', W/2, H-14)
   // stage indicator
   ctx.fillStyle = '#d7ccc8'; ctx.font = '10px sans-serif'
   ctx.fillText('1/3 · 煎饼', W/2, 56)
@@ -317,18 +362,19 @@ function drawFry() {
 function tapFry() {
   const f = G.f
   if (f.flipping || f.done) return; S.resume()
-  f.attempts++
   const val = Math.abs(f.t)
   let emoji, msg, scr
   if (val>=FRY_P1 && val<=FRY_P2) { emoji='🌟'; msg='完美翻面！'; scr=100; S.perfect(); screenShake(6) }
   else if (val>=FRY_Z1 && val<=FRY_Z2) { emoji='👍'; msg='还不错~'; scr=60; S.good() }
-  else { emoji='😅'; msg='火候不对...'; scr=0; S.miss() }
-  if (scr>f.best) f.best=scr
+  else { emoji='😅'; msg='火候不对...'; scr=10; S.miss() }
+  f.totalScore += scr; f.flipCount++
+  // speed up each flip
+  f.speed = (0.5 + Math.random()*0.12) * (1 + f.flipCount * 0.08)
   f.flipping=true; S.flip()
-  showOverlay(emoji, msg, scr>0?`+${scr}`:'', 800).then(()=>{
-    if (f.best>=100) {
-      f.done=true; G.scores[0]=f.best; S.stageClear()
-      showOverlay('🍳', '煎饼完成！', `${f.best}分`, 700).then(()=>{ G.transAlpha=0; startCatch() })
+  showOverlay(emoji, msg, scr>0?`+${scr} (${f.totalScore}/300)`:'', 800).then(()=>{
+    if (f.totalScore >= 300) {
+      f.done=true; G.scores[0]=Math.min(300, f.totalScore); S.stageClear()
+      showOverlay('🍳', '煎饼通关！', `${G.scores[0]}分`, 700).then(()=>{ G.transAlpha=0; startCatch() })
     } else { f.flipping=false; f.flipT=0 }
   })
 }
@@ -339,12 +385,13 @@ function tapFry() {
 function initCatch() {
   const c = G.c
   c.t = 12; c.items=[]; c.spawnT=0; c.px=200; c.tx=200
-  c.parts=[]; c.combo=0; c.maxCombo=0; c.score=0
+  c.parts=[]; c.combo=0; c.maxCombo=0; c.score=0; c.done=false
 }
 function startCatch() { G.stage=1; G.state='catch'; initCatch() }
 
 function updateCatch(dt) {
   const c = G.c
+  if (c.done) return
   c.px = lerp(c.px, c.tx, 0.18)
   c.spawnT -= dt
   if (c.spawnT<=0) {
@@ -368,7 +415,7 @@ function updateCatch(dt) {
     if (p.life<=0) c.parts.splice(i,1)
   }
   c.t -= dt
-  if (c.t<=0) { c.t=0; G.scores[1]=c.score; S.stageClear()
+  if (!c.done && c.t<=0) { c.done=true; c.t=0; G.scores[1]=c.score; S.stageClear()
     showOverlay('🎯', '时间到！', `${c.score}分`, 700).then(()=>{ G.transAlpha=0; startRoll() })
   }
 }
@@ -700,7 +747,7 @@ function screenShake(a) { shakeAmt = Math.max(shakeAmt, a) }
 //  RESULT
 // ==============================
 function showResult() {
-  G.state = 'result'
+  G.state = 'result'; BGM.stop()
   G.total = G.scores[0]+G.scores[1]+G.scores[2]
   G.resultT = 0; S.fanfare()
 }
@@ -734,7 +781,7 @@ function drawResult() {
   ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(W/2-8, bearY-5, 1.5, 0, Math.PI*2); ctx.fill()
   ctx.beginPath(); ctx.arc(W/2+12, bearY-5, 1.5, 0, Math.PI*2); ctx.fill()
   // mouth
-  const happy = G.total >= 200
+  const happy = G.total >= 350
   if (happy) {
     ctx.fillStyle = '#4a3636'
     ctx.beginPath(); ctx.arc(W/2, bearY+8, 5, 0.1, Math.PI-0.1); ctx.fill()
@@ -749,9 +796,9 @@ function drawResult() {
 
   // rank
   let rank, label
-  if (G.total>=280) { rank='S'; label='完美可丽饼大师！' }
-  else if (G.total>=200) { rank='A'; label='可丽饼高手！' }
-  else if (G.total>=120) { rank='B'; label='还不错哦！' }
+  if (G.total>=450) { rank='S'; label='完美可丽饼大师！' }
+  else if (G.total>=350) { rank='A'; label='可丽饼高手！' }
+  else if (G.total>=200) { rank='B'; label='还不错哦！' }
   else { rank='C'; label='再试一次吧！' }
 
   const rankY = bearY + 60
@@ -911,7 +958,7 @@ canvas.addEventListener('mousemove', e=>{
 function handleTap(cx, cy) {
   switch(G.state) {
     case 'title':
-      if (G.btnStart && isInside(cx,cy,G.btnStart)) { S.click(); G.state='fry'; resetG() }
+      if (G.btnStart && isInside(cx,cy,G.btnStart)) { S.click(); BGM.start(); G.state='fry'; resetG() }
       break
     case 'fry': tapFry(); break
     case 'catch': break
@@ -930,6 +977,7 @@ function loop(time) {
   G.lastTime = time; G.dt = dt; G.anim += dt
 
   // Update
+  BGM.update()
   if (G.state==='fry') updateFry(dt)
   else if (G.state==='catch') updateCatch(dt)
   else if (G.state==='roll') updateRoll(dt)
