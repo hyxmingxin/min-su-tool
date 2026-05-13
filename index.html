@@ -239,18 +239,33 @@ const room2Tab = document.getElementById('room2Tab')
 let currentRoom = 1
 let currentDoorPw = ''
 let currentRoomPw = ''
-// 每个房间独立存储文案
-const generated = { 1: null, 2: null }
+// 每个房间独立存储输入原文和生成的文案
+const roomData = {
+  1: { doorInput: '', roomInput: '', doorPw: '', roomPw: '', html: '' },
+  2: { doorInput: '', roomInput: '', doorPw: '', roomPw: '', html: '' }
+}
 
 // 房间切换
 function switchRoom(num) {
-  // 切走前保存当前房间文案
-  generated[currentRoom] = output.innerHTML || null
+  // 切走前保存当前房间状态
+  roomData[currentRoom].doorInput = doorInput.value
+  roomData[currentRoom].roomInput = roomInput.value
+  roomData[currentRoom].doorPw = currentDoorPw
+  roomData[currentRoom].roomPw = currentRoomPw
+  roomData[currentRoom].html = output.innerHTML || ''
+
   currentRoom = num
   document.querySelectorAll('.room-tab').forEach(t => t.classList.toggle('active', t.dataset.room == num))
-  // 切过来后显示该房间的文案
-  if (generated[num]) {
-    output.innerHTML = generated[num]
+
+  // 恢复目标房间状态
+  const d = roomData[num]
+  doorInput.value = d.doorInput
+  roomInput.value = d.roomInput
+  currentDoorPw = d.doorPw
+  currentRoomPw = d.roomPw
+  updateExtracted()
+  if (d.html) {
+    output.innerHTML = d.html
     output.classList.add('show')
   } else {
     output.classList.remove('show')
@@ -260,11 +275,8 @@ function switchRoom(num) {
 room1Tab.addEventListener('click', () => switchRoom(1))
 room2Tab.addEventListener('click', () => switchRoom(2))
 
-// 实时提取
-function onInput() {
-  currentDoorPw = extractPassword(doorInput.value, true)
-  currentRoomPw = extractPassword(roomInput.value, false)
-
+// 更新密码提取显示
+function updateExtracted() {
   if (currentDoorPw) {
     doorPw.textContent = currentDoorPw
     doorResult.classList.add('show')
@@ -277,6 +289,13 @@ function onInput() {
   } else {
     roomResult.classList.remove('show')
   }
+}
+
+// 实时提取
+function onInput() {
+  currentDoorPw = extractPassword(doorInput.value, true)
+  currentRoomPw = extractPassword(roomInput.value, false)
+  updateExtracted()
 }
 
 doorInput.addEventListener('input', onInput)
@@ -298,7 +317,7 @@ genBtn.addEventListener('click', () => {
     .replace(door, `<span class="hl">${door}</span>`)
     .replace(room, `<span class="hl">${room}</span>`)
   output.classList.add('show')
-  generated[currentRoom] = output.innerHTML
+  roomData[currentRoom].html = output.innerHTML
 })
 
 // 复制
