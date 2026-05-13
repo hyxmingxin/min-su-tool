@@ -210,14 +210,23 @@ function re(){
   const c=G.c;c.t=12;c.is=[];c.st=0;c.px=200;c.tx=200;c.pa=[];c.co=0;c.mc=0;c.sc=0;c.dn=false
   const r=G.r;r.pr=35;r.hi=0;r.to=6;r.dn=false;r.ta=[];for(let i=0;i<r.to;i++)r.ta.push({x:45+(W-90)*(i+0.5)/r.to,hi:false,pe:false})
 }
-let _o=null
-function ov(em,msg,sub,dur=800){G.ov={em,msg,sub,t:0,dur,ac:true};return new Promise(r=>{_o=r})}
+let _ovq=[]  // overlay 回调队列（替代 Promise）
+function ov(em,msg,sub,dur,cb){
+  G.ov={em,msg,sub,t:0,dur:dur||800,ac:true}
+  if(typeof cb==='function')_ovq.push(cb)
+}
 function drawOv(){
   if(!G.ov||!G.ov.ac)return
-  G.ov.t+=G.dt*(1/G.ov.dur*1000)
-  if(G.ov.t>=1){G.ov.ac=false;if(_o){_o();_o=null};return}
-  const a=Math.min(1,G.ov.t*4);ctx.fillStyle=`rgba(0,0,0,${0.2*a})`;ctx.fillRect(0,0,W,H)
-  const sc=0.8+0.2*(1-G.ov.t*2);ctx.save();ctx.translate(W/2,H/2-20);ctx.scale(sc,sc);ctx.globalAlpha=a
+  G.ov.t+=G.dt
+  if(G.ov.t>=G.ov.dur/1000){
+    G.ov.ac=false
+    const q=_ovq.slice();_ovq=[]
+    for(let i=0;i<q.length;i++)q[i]()
+    return
+  }
+  const p=G.ov.t/(G.ov.dur/1000)  // 0~1 进度
+  const a=Math.min(1,p*4);ctx.fillStyle=`rgba(0,0,0,${0.2*a})`;ctx.fillRect(0,0,W,H)
+  const sc=0.8+0.2*(1-p*2);ctx.save();ctx.translate(W/2,H/2-20);ctx.scale(Math.max(0.1,sc),Math.max(0.1,sc));ctx.globalAlpha=a
   sh(20,0,5,'rgba(0,0,0,0.12)');ctx.fillStyle='#fff';roundRect(-65,-45,130,90,22);ctx.fill();ns()
   ctx.font='34px sans-serif';ctx.textAlign='center';ctx.fillText(G.ov.em,0,-8)
   ctx.fillStyle='#5d4037';ctx.font='bold 16px sans-serif';ctx.fillText(G.ov.msg,0,24)
@@ -270,8 +279,8 @@ function tF(){
   const vl=Math.abs(f.t);let em,msg,sc
   if(vl>=P1&&vl<=P2){em='🌟';msg='完美翻面！';sc=100;S.pf()}else if(vl>=F1&&vl<=F2){em='👍';msg='还不错~';sc=60;S.gd()}else{em='😅';msg='火候不对...';sc=10;S.ms()}
   f.ts+=sc;f.fc++;f.sp=(0.5+Math.random()*0.12)*(1+f.fc*0.08);f.fl=true;S.fl()
-  ov(em,msg,sc>0?`+${sc} (${f.ts}/300)`:'',800).then(()=>{
-    if(f.ts>=300){f.dn=true;G.sc[0]=300;S.sc();ov('🍳','煎饼通关！','300分',700).then(()=>{G.st=1;G.s='catch';const c=G.c;c.t=12;c.is=[];c.st=0;c.px=200;c.tx=200;c.pa=[];c.co=0;c.mc=0;c.sc=0;c.dn=false})}
+  ov(em,msg,sc>0?`+${sc} (${f.ts}/300)`:'',800,function(){
+    if(f.ts>=300){f.dn=true;G.sc[0]=300;S.sc();ov('🍳','煎饼通关！','300分',700,function(){G.st=1;G.s='catch';const c=G.c;c.t=12;c.is=[];c.st=0;c.px=200;c.tx=200;c.pa=[];c.co=0;c.mc=0;c.sc=0;c.dn=false})}
     else{f.fl=false;f.ft=0}
   })
 }
@@ -286,7 +295,7 @@ function udC(dt){
       for(let j=0;j<10;j++)c.pa.push({x:it.x,y:py,vx:(Math.random()-.5)*150,vy:-60-Math.random()*120,l:1,c:it.c,p:it.p,r:2+Math.random()*4})}
     if(it.y>H+30){c.is.splice(i,1);c.co=0}}
   for(let i=c.pa.length-1;i>=0;i--){const p=c.pa[i];p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=350*dt;p.l-=dt;if(p.l<=0)c.pa.splice(i,1)}
-  c.t-=dt;if(!c.dn&&c.t<=0){c.dn=true;G.sc[1]=c.sc;S.sc();ov('🎯','时间到！',`${c.sc}分`,700).then(()=>{G.st=2;G.s='roll';const r=G.r;r.pr=35;r.hi=0;r.to=6;r.dn=false;r.ta=[];for(let i=0;i<r.to;i++)r.ta.push({x:45+(W-90)*(i+0.5)/r.to,hi:false,pe:false})})}
+  c.t-=dt;if(!c.dn&&c.t<=0){c.dn=true;G.sc[1]=c.sc;S.sc();ov('🎯','时间到！',`${c.sc}分`,700,function(){G.st=2;G.s='roll';const r=G.r;r.pr=35;r.hi=0;r.to=6;r.dn=false;r.ta=[];for(let i=0;i<r.to;i++)r.ta.push({x:45+(W-90)*(i+0.5)/r.to,hi:false,pe:false})})}
 }
 function dwC(){
   const c=G.c
@@ -352,7 +361,7 @@ function tR(){
   const t=r.ta[r.hi],df=Math.abs(r.pr-t.x);let em,msg
   if(df<6){em='🌟';msg='完美！';t.pe=true;t.hi=true;S.rp()}else if(df<18){em='👍';msg='还行~';t.hi=true;S.gd()}else{em='😅';msg='歪了...';t.hi=false;S.rt()}
   r.hi++
-  if(r.hi>=r.to){r.dn=true;const ps=r.ta.filter(t=>t.pe).length,hs=r.ta.filter(t=>t.hi).length;G.sc[2]=Math.min(150,Math.round(ps/r.to*100+hs/r.to*50));S.sc();ov('🎉','可丽饼卷好啦！',`${G.sc[2]}分`,700).then(()=>{G.s='result';G.tt=G.sc[0]+G.sc[1]+G.sc[2];B.st()
+  if(r.hi>=r.to){r.dn=true;const ps=r.ta.filter(t=>t.pe).length,hs=r.ta.filter(t=>t.hi).length;G.sc[2]=Math.min(150,Math.round(ps/r.to*100+hs/r.to*50));S.sc();ov('🎉','可丽饼卷好啦！',`${G.sc[2]}分`,700,function(){G.s='result';G.tt=G.sc[0]+G.sc[1]+G.sc[2];B.st()
     let rk,lb;const ttl=G.tt
     if(ttl>=450){rk='S';lb='完美可丽饼大师！'}else if(ttl>=350){rk='A';lb='可丽饼高手！'}else if(ttl>=200){rk='B';lb='还不错哦！'}else{rk='C';lb='再试一次吧！'}
     document.getElementById('gp').classList.remove('on')
@@ -378,18 +387,18 @@ c.addEventListener('mousedown',e=>{S.go();S.ok();const r=c.getBoundingClientRect
 // ====== LOOP ======
 let _lt=0
 function lp(t){
-  const dt=Math.min((t-_lt)/1000,0.05);_lt=t;G.dt=dt;G.an+=dt
-  B.up()
-  if(G.s==='fry')udF(dt)
-  else if(G.s==='catch')udC(dt)
-  else if(G.s==='roll')udR(dt)
-
-  // Always clear and draw game canvas
-  ctx.clearRect(0,0,W,H)
-  if(G.s==='fry')dwF()
-  else if(G.s==='catch')dwC()
-  else if(G.s==='roll')dwR()
-  drawOv()
+  try{
+    const dt=Math.min((t-_lt)/1000,0.05);_lt=t;G.dt=dt;G.an+=dt
+    B.up()
+    if(G.s==='fry')udF(dt)
+    else if(G.s==='catch')udC(dt)
+    else if(G.s==='roll')udR(dt)
+    ctx.clearRect(0,0,W,H)
+    if(G.s==='fry')dwF()
+    else if(G.s==='catch')dwC()
+    else if(G.s==='roll')dwR()
+    drawOv()
+  }catch(e){/* 游戏循环异常保护 */}
   rAF(lp)
 }
 
