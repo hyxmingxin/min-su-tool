@@ -197,12 +197,18 @@ function extractPassword(text, isDoor) {
   if (!text) return ''
   // 大门（Ukey）：提取"开锁码："后面的内容，或所有空格分隔的数字组合
   if (isDoor) {
+    // 先把数字提取出来，再把倒数第二段和最后一段合并（如 9393 4316 9200 5 → 9393 4316 92005）
+    const combine = (s) => {
+      const p = s.trim().split(/\s+/)
+      if (p.length > 1) { p[p.length - 2] += p.pop() }
+      return p.join(' ')
+    }
     // 优先找"开锁码"后面的
     const match = text.match(/开锁码[：:]\s*([\d\s]+)/)
-    if (match) return match[1].trim().replace(/\s+/g, ' ')
+    if (match) return combine(match[1])
     // 找所有空格分隔的数字组合（如 9393 4316 9200 5）
     const grouped = text.match(/\d{4}\s+\d{4}\s+\d{4}\s+\d/)
-    if (grouped) return grouped[0].trim()
+    if (grouped) return combine(grouped[0])
   }
   // 房间门（通通锁）：纯数字 6位以上
   const longDigits = text.match(/\d{6,}/)
