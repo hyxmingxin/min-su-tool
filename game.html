@@ -6,13 +6,9 @@
 <title>白熊可丽饼 · 制作大挑战</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html{height:100%}
-body{
-  position:fixed;top:0;left:0;right:0;bottom:0;
-  overflow:hidden;background:#fef5ee;
-  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;
-}
-.page{display:none;width:100%;height:100%;flex-direction:column;align-items:center;justify-content:center}
+html,body{width:100%;height:100%;overflow:hidden}
+body{background:#fef5ee;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;position:relative}
+.page{position:absolute;top:0;left:0;width:100%;height:100%;display:none;flex-direction:column;align-items:center;justify-content:center}
 .page.on{display:flex}
 
 /* ====== TITLE ====== */
@@ -130,7 +126,8 @@ body{
 const c = document.getElementById('c')
 const x = c.getContext('2d')
 let W=400,H=700
-window.rAF=window.requestAnimationFrame||function(cb){return setTimeout(cb,16)}
+const _perfNow=(window.performance&&window.performance.now)?function(){return performance.now()}:function(){return Date.now()}
+window.rAF=window.requestAnimationFrame||function(cb){return setTimeout(function(){cb(_perfNow())},16)}
 const ctx=x
 function sz(){
   const vw=window.innerWidth,vh=window.innerHeight
@@ -383,12 +380,20 @@ function lp(t){
 // ====== BOOT ======
 function startGame(){
   // 防重复触发（移动端 touchend + click 可能都触发）
-  if(!document.getElementById('tp').classList.contains('on'))return
-  S.go();S.ok();S.cl();B.go();sz()
-  document.getElementById('tp').classList.remove('on')
-  document.getElementById('gp').classList.add('on')
-  re()
-  if(!_lt||_lt===0){_lt=performance.now();rAF(lp)}
+  try{
+    if(!document.getElementById('tp').classList.contains('on'))return
+    S.go();S.ok();S.cl();B.go();sz()
+    document.getElementById('tp').classList.remove('on')
+    document.getElementById('gp').classList.add('on')
+    re()
+    if(!_lt||_lt===0){_lt=_perfNow();rAF(lp)}
+  }catch(e){
+    // 降级：出错也强制显示游戏页面
+    document.getElementById('tp').classList.remove('on')
+    document.getElementById('gp').classList.add('on')
+    re()
+    if(!_lt||_lt===0){_lt=_perfNow();rAF(lp)}
+  }
 }
 const goBtn=document.getElementById('go')
 goBtn.addEventListener('click',startGame)

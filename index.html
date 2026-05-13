@@ -1,349 +1,776 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>白熊民宿 · 密码生成器</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{
-  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;
-  background:#f5f2ed;color:#2c2824;padding:20px;min-height:100vh;
-}
-.container{max-width:860px;margin:0 auto}
-h1{font-size:22px;font-weight:600;color:#1a1510;margin-bottom:4px;letter-spacing:1px}
-.sub{font-size:13px;color:#8a7a6a;margin-bottom:20px}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可丽饼大王 · 韩宜学</title>
+    <style>
+        /* ===== Reset & Base ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Noto Serif SC', 'Times New Roman', serif;
+            background: #0a0806;
+            color: #e8e0d8;
+            line-height: 1.8;
+            overflow-x: hidden;
+        }
+        a { text-decoration: none; color: inherit; }
 
-/* 房间选择 */
-.room-tabs{display:flex;gap:12px;margin-bottom:20px}
-.room-tab{
-  flex:1;padding:14px;text-align:center;border-radius:10px;
-  font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;
-  background:#fff;color:#8a7a6a;border:2px solid transparent;
-  box-shadow:0 2px 8px rgba(0,0,0,0.04);
-}
-.room-tab.active{background:#2c2824;color:#fff;border-color:#2c2824}
-.room-tab:active{opacity:0.7}
+        /* ===== Scrollbar ===== */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0806; }
+        ::-webkit-scrollbar-thumb { background: #c8a87c; border-radius: 3px; }
 
-/* 输入区 */
-.input-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
-.input-group{background:#fff;border-radius:12px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,0.04)}
-.input-group label{font-size:13px;font-weight:600;color:#4a3f36;display:block;margin-bottom:8px}
-.input-group label span{font-weight:400;color:#8a7a6a;font-size:11px}
-.input-group textarea{
-  width:100%;height:120px;border:1px solid #e8e0d6;border-radius:8px;
-  padding:12px;font-size:13px;color:#2c2824;resize:vertical;
-  font-family:inherit;line-height:1.6;background:#faf8f6;
-  transition:border-color 0.2s;
-}
-.input-group textarea:focus{outline:none;border-color:#c8a87c}
-.input-group .extracted{
-  margin-top:10px;padding:10px 12px;background:#faf8f6;border-radius:6px;
-  font-size:15px;color:#1a1510;display:none;
-}
-.input-group .extracted .pw{font-weight:700;color:#c0392b;letter-spacing:2px;font-size:18px}
-.input-group .extracted.show{display:flex;align-items:center;gap:8px}
+        /* ===== Loading ===== */
+        #loader {
+            position: fixed; inset: 0; z-index: 9999;
+            background: #0a0806;
+            display: flex; align-items: center; justify-content: center;
+            flex-direction: column;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+        #loader.hidden { opacity: 0; visibility: hidden; }
+        #loader .knife {
+            width: 40px; height: 40px;
+            border: 2px solid #c8a87c;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #loader p { margin-top: 20px; color: #c8a87c; font-size: 13px; letter-spacing: 4px; }
 
-/* 按钮 */
-.sel{font-size:10px;color:#8a7a6a;cursor:pointer;margin-left:8px;text-decoration:underline;user-select:none}
-.sel:active{opacity:0.5}
-.btn-row{display:flex;gap:12px;margin-bottom:16px}
-.btn{
-  flex:1;padding:14px;border:none;border-radius:10px;font-size:15px;font-weight:600;
-  cursor:pointer;transition:opacity 0.2s;
-}
-.btn:active{opacity:0.7}
-.btn-primary{background:#2c2824;color:#fff}
-.btn-copy{background:#c8a87c;color:#fff}
+        /* ===== Hero ===== */
+        .hero {
+            position: relative; min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            text-align: center;
+            background:
+                radial-gradient(ellipse at 30% 20%, rgba(200,168,124,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 80%, rgba(200,168,124,0.06) 0%, transparent 60%),
+                linear-gradient(180deg, #0a0806 0%, #14100c 50%, #0a0806 100%);
+        }
+        .hero-bg {
+            position: absolute; inset: 0; overflow: hidden;
+            pointer-events: none;
+        }
+        .hero-bg span {
+            position: absolute; font-size: 20rem; font-family: serif;
+            color: rgba(200,168,124,0.025);
+            line-height: 1; user-select: none;
+            animation: float 20s ease-in-out infinite;
+        }
+        .hero-bg span:nth-child(1) { top: -5%; left: -5%; }
+        .hero-bg span:nth-child(2) { bottom: -10%; right: -5%; animation-delay: -7s; }
+        .hero-bg span:nth-child(3) { top: 40%; left: 50%; font-size: 30rem; opacity: 0.015; animation-delay: -14s; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(2deg); }
+        }
 
-/* 输出 */
-.output{
-  background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.04);
-  white-space:pre-wrap;font-size:14px;line-height:1.9;color:#2c2824;
-  min-height:200px;display:none;font-family:inherit;
-}
-.output.show{display:block}
-.output .hl{color:#c0392b;font-weight:700}
+        /* ===== Hero Bear ===== */
+        .hero-bear {
+            width: 100px; height: 115px;
+            margin: 0 auto 28px;
+            position: relative;
+            animation: bearFloat 3s ease-in-out infinite;
+        }
+        @keyframes bearFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-7px); }
+        }
+        .hero-bear-face {
+            position: absolute;
+            bottom: 0; left: 5px;
+            width: 90px; height: 80px;
+            background: radial-gradient(ellipse at 50% 35%, #f7f2ec, #eae2d8);
+            border-radius: 50%;
+            box-shadow: 0 4px 30px rgba(200,168,124,0.15);
+            z-index: 2;
+        }
+        .hero-bear-ear {
+            position: absolute;
+            width: 26px; height: 26px;
+            background: #e8dfd4;
+            border-radius: 50%;
+            top: 30px; z-index: 1;
+        }
+        .hero-bear-ear.l { left: 8px; }
+        .hero-bear-ear.r { right: 8px; }
+        .hero-bear-ear::after {
+            content: '';
+            position: absolute;
+            width: 13px; height: 13px;
+            background: rgba(200,168,124,0.2);
+            border-radius: 50%;
+            top: 6px; left: 7px;
+        }
+        .hero-bear-eye {
+            position: absolute;
+            width: 9px; height: 11px;
+            background: #3d3228;
+            border-radius: 50%;
+            top: 42px;
+        }
+        .hero-bear-eye.l { left: 22px; }
+        .hero-bear-eye.r { right: 22px; }
+        .hero-bear-eye::after {
+            content: '';
+            position: absolute;
+            width: 3px; height: 4px;
+            background: #f5f0ea;
+            border-radius: 50%;
+            top: 2px; left: 5px;
+        }
+        .hero-bear-blush {
+            position: absolute;
+            width: 16px; height: 9px;
+            background: rgba(200,168,124,0.25);
+            border-radius: 50%;
+            top: 52px;
+        }
+        .hero-bear-blush.l { left: 12px; }
+        .hero-bear-blush.r { right: 12px; }
+        .hero-bear-mouth {
+            position: absolute;
+            width: 5px; height: 5px;
+            background: #5a4a3a;
+            border-radius: 50%;
+            top: 60px; left: 50%; margin-left: -2.5px;
+        }
+        .hero-bear-hat {
+            position: absolute;
+            top: 14px; left: 50%; margin-left: -31px;
+            width: 62px; height: 30px;
+            background: #fff;
+            border-radius: 30px 30px 5px 5px;
+            box-shadow: 0 2px 15px rgba(200,168,124,0.12);
+            z-index: 3;
+        }
+        .hero-bear-hat::after {
+            content: '';
+            position: absolute;
+            bottom: 5px; left: 50%; margin-left: -22px;
+            width: 44px; height: 6px;
+            background: rgba(200,168,124,0.25);
+            border-radius: 3px;
+        }
+        .hero-bear-hat-pom {
+            position: absolute;
+            top: -12px; left: 50%; margin-left: -13px;
+            width: 26px; height: 18px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 2px 10px rgba(200,168,124,0.08);
+        }
 
-@media(max-width:600px){
-  .input-row{grid-template-columns:1fr}
-  body{padding:16px}
-}
-</style>
+        .hero-content { position: relative; z-index: 1; padding: 40px 20px; max-width: 900px; }
+        .hero-badge {
+            display: inline-block;
+            border: 1px solid rgba(200,168,124,0.3);
+            padding: 6px 28px;
+            font-size: 11px; letter-spacing: 6px; text-transform: uppercase;
+            color: #c8a87c; margin-bottom: 40px;
+        }
+        .hero h1 {
+            font-size: clamp(3rem, 8vw, 6.5rem);
+            font-weight: 400; letter-spacing: 8px;
+            color: #f5efe8;
+            text-shadow: 0 2px 40px rgba(200,168,124,0.15);
+        }
+        .hero h1 em { font-style: normal; display: block; font-size: 0.5em; letter-spacing: 12px; color: #c8a87c; margin-top: 10px; }
+        .hero-sub {
+            margin-top: 30px;
+            font-size: 14px; letter-spacing: 4px;
+            color: #a09080;
+        }
+        .hero-line {
+            width: 60px; height: 1px;
+            background: linear-gradient(90deg, transparent, #c8a87c, transparent);
+            margin: 30px auto 0;
+        }
+
+        /* ===== Nav ===== */
+        .nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            padding: 20px 50px;
+            display: flex; justify-content: space-between; align-items: center;
+            transition: background 0.4s, padding 0.4s, backdrop-filter 0.4s;
+            backdrop-filter: blur(0px);
+        }
+        .nav.scrolled {
+            background: rgba(10,8,6,0.85);
+            backdrop-filter: blur(12px);
+            padding: 14px 50px;
+            border-bottom: 1px solid rgba(200,168,124,0.06);
+        }
+        .nav-logo { font-size: 16px; letter-spacing: 6px; color: #c8a87c; }
+        .nav-links { display: flex; gap: 36px; }
+        .nav-links a {
+            font-size: 12px; letter-spacing: 2px; color: #908070;
+            transition: color 0.3s; position: relative;
+        }
+        .nav-links a::after {
+            content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 1px;
+            background: #c8a87c; transition: width 0.3s;
+        }
+        .nav-links a:hover { color: #c8a87c; }
+        .nav-links a:hover::after { width: 100%; }
+
+        /* ===== Sections common ===== */
+        section { padding: 120px 20px; }
+        .section-inner {
+            max-width: 1100px; margin: 0 auto;
+        }
+        .section-label {
+            font-size: 10px; letter-spacing: 6px; text-transform: uppercase;
+            color: #c8a87c; margin-bottom: 16px;
+        }
+        .section-title {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 300; letter-spacing: 4px;
+            color: #f0e8e0;
+            margin-bottom: 60px;
+        }
+        .section-title span { color: #c8a87c; }
+
+        /* ===== About ===== */
+        .about-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 80px; align-items: center;
+        }
+        .about-image {
+            position: relative;
+        }
+        .about-image .img-frame {
+            width: 100%; padding-bottom: 125%;
+            background: linear-gradient(145deg, #1a1510, #221c16);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(200,168,124,0.08);
+        }
+        .about-image .img-frame::before {
+            content: '✦';
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 60px; color: rgba(200,168,124,0.15);
+        }
+        .about-image .img-frame .placeholder-text {
+            position: absolute; bottom: 30px; left: 30px; right: 30px;
+            font-size: 12px; letter-spacing: 2px;
+            color: rgba(200,168,124,0.3);
+            text-align: center;
+        }
+        .about-image .img-decoration {
+            position: absolute; top: -20px; right: -20px;
+            width: 120px; height: 120px;
+            border: 1px solid rgba(200,168,124,0.15);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .about-image .img-decoration2 {
+            position: absolute; bottom: -15px; left: -15px;
+            width: 80px; height: 80px;
+            border: 1px solid rgba(200,168,124,0.1);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .about-text .greeting {
+            font-size: 18px; color: #c8a87c; margin-bottom: 16px;
+            letter-spacing: 2px;
+        }
+        .about-text p {
+            font-size: 15px; color: #b0a898;
+            margin-bottom: 20px; line-height: 2;
+        }
+        .about-text .highlight {
+            color: #d4c0a8;
+        }
+        .about-stats {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 20px; margin-top: 40px;
+        }
+        .about-stats div {
+            text-align: center;
+            padding: 20px 10px;
+            border: 1px solid rgba(200,168,124,0.08);
+            border-radius: 4px;
+            background: rgba(200,168,124,0.02);
+        }
+        .about-stats .num {
+            font-size: 28px; font-weight: 300; color: #c8a87c;
+            letter-spacing: 2px;
+        }
+        .about-stats .label {
+            font-size: 11px; color: #908070; margin-top: 6px;
+            letter-spacing: 2px;
+        }
+
+        /* ===== Philosophy ===== */
+        #philosophy {
+            background: linear-gradient(180deg, rgba(200,168,124,0.02) 0%, transparent 100%);
+        }
+        .phil-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+        }
+        .phil-card {
+            padding: 50px 30px;
+            text-align: center;
+            border: 1px solid rgba(200,168,124,0.06);
+            border-radius: 4px;
+            transition: border-color 0.4s, transform 0.4s, background 0.4s;
+            background: rgba(200,168,124,0.02);
+        }
+        .phil-card:hover {
+            border-color: rgba(200,168,124,0.25);
+            transform: translateY(-6px);
+            background: rgba(200,168,124,0.04);
+        }
+        .phil-card .icon { font-size: 36px; color: #c8a87c; margin-bottom: 24px; }
+        .phil-card h3 {
+            font-size: 16px; font-weight: 400; letter-spacing: 3px;
+            color: #f0e8e0; margin-bottom: 16px;
+        }
+        .phil-card p {
+            font-size: 13px; color: #a09080; line-height: 1.9;
+        }
+
+        /* ===== Signature ===== */
+        .sig-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+        .sig-card {
+            position: relative;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid rgba(200,168,124,0.06);
+            background: #14100c;
+            cursor: pointer;
+            transition: transform 0.5s, border-color 0.4s;
+        }
+        .sig-card:hover {
+            transform: scale(1.02);
+            border-color: rgba(200,168,124,0.2);
+        }
+        .sig-card .img {
+            width: 100%; padding-bottom: 75%;
+            background: linear-gradient(145deg, #1a1510, #251e18);
+            position: relative;
+            overflow: hidden;
+        }
+        .sig-card .img::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(180deg, transparent 50%, rgba(10,8,6,0.6) 100%);
+        }
+        .sig-card .img .pattern {
+            position: absolute; inset: 0;
+            background:
+                radial-gradient(circle at 30% 40%, rgba(200,168,124,0.06) 0%, transparent 50%),
+                radial-gradient(circle at 70% 60%, rgba(200,168,124,0.04) 0%, transparent 50%);
+        }
+        .sig-card .img .deco-icon {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px; color: rgba(200,168,124,0.08);
+        }
+        .sig-card .info {
+            padding: 24px 24px 30px;
+        }
+        .sig-card .info h4 {
+            font-size: 15px; font-weight: 400; letter-spacing: 2px;
+            color: #e8e0d8; margin-bottom: 8px;
+        }
+        .sig-card .info p {
+            font-size: 12px; color: #908070; letter-spacing: 1px;
+        }
+
+        /* ===== Contact ===== */
+        #contact {
+            background:
+                radial-gradient(ellipse at 50% 50%, rgba(200,168,124,0.04) 0%, transparent 60%),
+                linear-gradient(180deg, #0a0806 0%, #100e0a 100%);
+            text-align: center;
+        }
+        .contact-grid {
+            display: flex; align-items: center; justify-content: center;
+            gap: 80px; flex-wrap: wrap; margin-top: 20px;
+        }
+        .contact-info { text-align: left; }
+        .contact-info .item {
+            display: flex; align-items: center;
+            gap: 16px; margin-bottom: 20px;
+        }
+        .contact-info .item .icon { font-size: 18px; color: #c8a87c; width: 30px; text-align: center; }
+        .contact-info .item .text {
+            font-size: 14px; color: #b0a898; letter-spacing: 1px;
+        }
+        .contact-info .item .text strong { color: #e0d8d0; font-weight: 400; }
+
+        .qr-box {
+            text-align: center;
+        }
+        .qr-box canvas, .qr-box img {
+            display: block;
+            width: 180px; height: 180px;
+            border: 1px solid rgba(200,168,124,0.15);
+            border-radius: 4px;
+            padding: 12px;
+            background: #fff;
+        }
+        .qr-box .qr-label {
+            margin-top: 16px;
+            font-size: 11px; letter-spacing: 3px; color: #908070;
+        }
+
+        /* ===== Footer ===== */
+        footer {
+            text-align: center;
+            padding: 60px 20px 40px;
+            border-top: 1px solid rgba(200,168,124,0.04);
+        }
+        footer p {
+            font-size: 11px; color: #605850; letter-spacing: 2px;
+        }
+        footer .social {
+            display: flex; justify-content: center; gap: 24px;
+            margin-bottom: 24px;
+        }
+        footer .social a {
+            width: 40px; height: 40px;
+            border: 1px solid rgba(200,168,124,0.1);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; color: #908070;
+            transition: border-color 0.3s, color 0.3s, background 0.3s;
+        }
+        footer .social a:hover {
+            border-color: #c8a87c; color: #c8a87c;
+            background: rgba(200,168,124,0.05);
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 768px) {
+            .nav { padding: 16px 20px; }
+            .nav.scrolled { padding: 12px 20px; }
+            .nav-links { gap: 20px; }
+            .nav-links a { font-size: 10px; letter-spacing: 1px; }
+
+            .about-grid { grid-template-columns: 1fr; gap: 40px; }
+            .phil-grid { grid-template-columns: 1fr; gap: 20px; }
+            .sig-grid { grid-template-columns: 1fr; gap: 20px; }
+
+            .contact-grid { gap: 40px; }
+            .contact-info .item .text { font-size: 13px; }
+
+            .about-stats { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+            .about-stats .num { font-size: 22px; }
+
+            section { padding: 80px 20px; }
+        }
+        @media (max-width: 480px) {
+            .nav-links a:nth-child(3) { display: none; }
+            .hero h1 { letter-spacing: 4px; }
+            .hero-badge { font-size: 9px; letter-spacing: 4px; padding: 4px 18px; }
+        }
+    </style>
 </head>
 <body>
-<div class="container">
-  <h1>🐻 白熊民宿 · 密码文案生成器</h1>
-  <p class="sub">选择房间 → 粘贴两个App的通知 → 自动生成</p>
 
-  <!-- 房间选择 -->
-  <div class="room-tabs">
-    <div class="room-tab active" data-room="1" id="room1Tab">🏠 001号房</div>
-    <div class="room-tab" data-room="2" id="room2Tab">🏠 002号房</div>
-  </div>
-
-  <!-- 密码输入 -->
-  <div class="input-row">
-    <div class="input-group">
-      <label>🚪 204大门通知 <span>（Ukey智能锁）</span><span class="sel" onclick="document.getElementById('doorInput').select()">全选</span></label>
-      <textarea id="doorInput" placeholder="粘贴Ukey通知…"></textarea>
-      <div class="extracted" id="doorResult">
-        <span>🔑 大门密码：</span>
-        <span class="pw" id="doorPw"></span>
-      </div>
-    </div>
-    <div class="input-group">
-      <label>🚪 房间门通知 <span>（通通锁）</span><span class="sel" onclick="document.getElementById('roomInput').select()">全选</span></label>
-      <textarea id="roomInput" placeholder="粘贴通通锁通知…"></textarea>
-      <div class="extracted" id="roomResult">
-        <span>🔑 房间密码：</span>
-        <span class="pw" id="roomPw"></span>
-      </div>
-    </div>
-  </div>
-
-  <div class="btn-row">
-    <button class="btn btn-primary" id="genBtn">⚡ 生成文案</button>
-    <button class="btn btn-copy" id="copyBtn">📋 复制文案</button>
-  </div>
-
-  <div class="output" id="output"></div>
+<!-- ===== Loader ===== -->
+<div id="loader">
+    <div class="knife"></div>
+    <p>载入中</p>
 </div>
 
+<!-- ===== Nav ===== -->
+<nav class="nav" id="navbar">
+    <div class="nav-logo">✦ 白熊可丽饼</div>
+    <div class="nav-links">
+        <a href="#about">关于</a>
+        <a href="#philosophy">理念</a>
+        <a href="#signature">代表作</a>
+        <a href="#contact">联系</a>
+    </div>
+</nav>
+
+<!-- ===== Hero ===== -->
+<section class="hero" id="top">
+    <div class="hero-bg">
+        <span>✦</span>
+        <span>✦</span>
+        <span>✦</span>
+    </div>
+    <div class="hero-content">
+        <!-- 厨师帽白熊 -->
+        <div class="hero-bear">
+            <div class="hero-bear-ear l"></div>
+            <div class="hero-bear-ear r"></div>
+            <div class="hero-bear-hat">
+                <div class="hero-bear-hat-pom"></div>
+            </div>
+            <div class="hero-bear-face">
+                <div class="hero-bear-eye l"></div>
+                <div class="hero-bear-eye r"></div>
+                <div class="hero-bear-blush l"></div>
+                <div class="hero-bear-blush r"></div>
+                <div class="hero-bear-mouth"></div>
+            </div>
+        </div>
+        <div class="hero-badge">✦ 武昌 · 粮道街 ✦</div>
+        <h1>
+            白熊可丽饼屋
+            <em>韩宜学 · 粮道街可丽饼大王</em>
+        </h1>
+        <p class="hero-sub">
+            一张可丽饼 · 征服一条街
+        </p>
+        <div class="hero-line"></div>
+    </div>
+</section>
+
+<!-- ===== About ===== -->
+<section id="about">
+    <div class="section-inner">
+        <div class="section-label">— 01 关于我</div>
+        <div class="about-grid">
+            <div class="about-image">
+                <div class="img-frame">
+                    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+                        <img src="https://images.unsplash.com/photo-1589656966895-2f33e7653819?w=600&h=750&fit=crop&auto=format" alt="白熊" style="width:100%;height:100%;object-fit:cover;display:block;">
+                    </div>
+                </div>
+                <div class="img-decoration"></div>
+                <div class="img-decoration2"></div>
+            </div>
+            <div class="about-text">
+                <div class="greeting">✧ 白熊出摊 · 全街期待 ✧</div>
+                <p>
+                    大家好，我是<span class="highlight">韩宜学</span>——
+                    <span class="highlight">「白熊可丽饼屋」</span> 的主人，
+                    武昌粮道街的 <span class="highlight">「可丽饼大王」</span>。
+                </p>
+                <p>
+                    从一辆小推车开始，到如今排队两小时起步的传奇摊位，
+                    白熊的招牌就是那只 <span class="highlight">帅气的北极熊</span>。
+                    我的厨房就是粮道街的街角，
+                    我的秘诀就是每一张饼都<span class="highlight">现摊现做、绝不敷衍</span>。
+                    脆边、热芯、料足——这是白熊的底线。
+                </p>
+                <p>
+                    有人说，不过是一张饼而已。
+                    但当你咬下那一口——<strong>外脆内软、奶油爆浆、水果清甜</strong>——
+                    你就会明白，为什么整条粮道街，只认白熊这一家。
+                </p>
+                <div class="about-stats">
+                    <div>
+                        <div class="num">8+</div>
+                        <div class="label">年出摊经验</div>
+                    </div>
+                    <div>
+                        <div class="num">50w+</div>
+                        <div class="label">累计售出</div>
+                    </div>
+                    <div>
+                        <div class="num">4.9</div>
+                        <div class="label">评分 · 满分5</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== Philosophy ===== -->
+<section id="philosophy">
+    <div class="section-inner">
+        <div class="section-label">— 02 创作理念</div>
+        <div class="section-title">我的 <span>可丽饼哲学</span></div>
+        <div class="phil-grid">
+            <div class="phil-card">
+                <div class="icon">🔥</div>
+                <h3>现摊才是王道</h3>
+                <p>
+                    面糊上铛的那一刻，温度必须到位。
+                    脆边是尊严，不能软，不能塌。
+                    每一张饼都是独一份，绝不提前预制。
+                </p>
+            </div>
+            <div class="phil-card">
+                <div class="icon">🍓</div>
+                <h3>料必须给足</h3>
+                <p>
+                    草莓要当天切的，香蕉要现剥的，
+                    奶油要打到刚刚好的。
+                    我的原则很简单——<br>
+                    让每一个顾客都觉得「这钱花得值」。
+                </p>
+            </div>
+            <div class="phil-card">
+                <div class="icon">❤️</div>
+                <h3>做饼就是做人</h3>
+                <p>
+                    排队半小时以上的客人，
+                    我记着他们的脸。
+                    一声「来了啊，老样子？」<br>
+                    这就是粮道街的温度。
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== Signature ===== -->
+<section id="signature">
+    <div class="section-inner">
+        <div class="section-label">— 03 代表之作</div>
+        <div class="section-title">我的 <span>招牌可丽饼</span></div>
+        <div class="sig-grid">
+            <div class="sig-card">
+                <div class="img">
+                    <div class="pattern"></div>
+                    <div class="deco-icon">🍓</div>
+                </div>
+                <div class="info">
+                    <h4>· 草莓可丽饼 ·</h4>
+                    <p>现切草莓 × 手打奶油 × 脆边饼皮 · 酸甜爆浆</p>
+                </div>
+            </div>
+            <div class="sig-card">
+                <div class="img">
+                    <div class="pattern"></div>
+                    <div class="deco-icon">🍌</div>
+                </div>
+                <div class="info">
+                    <h4>· 香蕉可丽饼 ·</h4>
+                    <p>焦糖香蕉 × 巧克力酱 × 坚果碎 · 经典永不过时</p>
+                </div>
+            </div>
+            <div class="sig-card">
+                <div class="img">
+                    <div class="pattern"></div>
+                    <div class="deco-icon">🍪</div>
+                </div>
+                <div class="info">
+                    <h4>· 奥利奥可丽饼 ·</h4>
+                    <p>奥利奥碎 × 芝士奶油 × 海盐焦糖酱 · 罪恶即正义</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== Contact ===== -->
+<section id="contact">
+    <div class="section-inner">
+        <div class="section-label">— 04 与我联系</div>
+        <div class="section-title">期待与你 <span>相遇</span></div>
+        <div class="contact-grid">
+            <div class="contact-info">
+                <div class="item">
+                    <span class="icon">☎</span>
+                    <span class="text"><strong>电话</strong> · 139 8628 2682</span>
+                </div>
+                <div class="item">
+                    <span class="icon">💬</span>
+                    <span class="text"><strong>微信</strong> · CrepeMaster_Han</span>
+                </div>
+                <div class="item">
+                    <span class="icon">◈</span>
+                    <span class="text"><strong>出没地</strong> · 武昌粮道街 · 看见白熊招牌就是</span>
+                </div>
+                <div class="item">
+                    <span class="icon">◎</span>
+                    <span class="text"><strong>营业</strong> · 每天 14:00 — 卖完就收</span>
+                </div>
+            </div>
+            <div class="qr-box">
+                <canvas id="qrCanvas" width="300" height="300"></canvas>
+                <p class="qr-label">✧ 扫码联系我 ✧</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== Footer ===== -->
+<footer>
+    <div class="social">
+        <a href="#" title="微信">微</a>
+        <a href="#" title="小红书">红</a>
+        <a href="#" title="Instagram">IG</a>
+        <a href="#" title="微博">博</a>
+    </div>
+    <p>© 2026 白熊可丽饼屋 · 武昌粮道街 · 每天下午出摊 卖完就收</p>
+</footer>
+
+<!-- ===== QR Code Generator (minified) ===== -->
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
-// ===== 两套文案模板 =====
-const TPL = {
-  1: `✅欢迎入住～愿你在此疗愈身心、满血充电！祝您入住愉快！
+    (function() {
+        // ---- Loading ----
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.getElementById('loader').classList.add('hidden');
+            }, 600);
+        });
 
-📞房东联系（微信同号）
-▸主号：13986282682
-▸备用：13886191182（主号未接通打这个）
-▸房东就在旁边，有需求随时找！
+        // ---- Nav scroll ----
+        var navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 80) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
 
-🚫入住须知
-▸禁带宠物
-▸暂不接待12岁以下、70岁以上客人
-▸最多2人入住
+        // ---- Smooth scroll for nav links ----
+        document.querySelectorAll('.nav-links a').forEach(function(a) {
+            a.addEventListener('click', function(e) {
+                e.preventDefault();
+                var target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
 
-⏰入住退房
-▸入住：14:00后
-▸退房：12:00前｜退房后麻烦发消息告知
+        // ---- QR Code ----
+        var qr = new QRCode(document.getElementById('qrCanvas'), {
+            text: 'tel:13986282682',
+            width: 180,
+            height: 180,
+            colorDark: '#0a0806',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+        });
 
-🔒密码锁操作（两道门都是密码锁）
-▸204大门：{DOOR_PW}
-✔手背轻贴亮灯再输，输完按#结束
-✔输错按*删除，别着急避免误输
-▸001号门：{ROOM_PW}
+        // ---- Intersection Observer for cards ----
+        var cards = document.querySelectorAll('.phil-card, .sig-card, .about-stats div');
+        var observer = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
 
-🛁房间设施使用
-▸热水器：提前通电，15分钟左右烧热即可用
-▸吹风机：面盆柜内
-▸投影：有优酷酷喵会员，登不上找房东
-▸WiFi：名称白熊｜密码bxklbw1990@.
+        cards.forEach(function(card) {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(card);
+        });
 
-🌿阳台须知
-▸有隐藏纱门，配备晾衣架可晾晒衣物
-▸有自动浇水系统，花草勿动（不浇水不施肥）
-▸周边小吃/景点，想要推荐随时问
-
-📌注意事项
-▸请勿损坏房内外设施设备及墙面，爱护绿植
-▸有任何不足，随时反馈，我们及时整改妥善处理
-❗️ ❗️ 人不在房间请关闭好阳台门，附近会有野猫捣乱的哦 ❗️ ❗️`,
-
-  2: `✅欢迎入住～愿你在此疗愈身心、满血充电！祝您入住愉快！
-
-📞房东联系（微信同号）
-▸主号：13986282682
-▸备用：13886191182（主号未接通打这个）
-▸房东就在隔壁，有需求随时找！
-
-🚫入住须知
-▸禁带宠物
-▸暂不接待12岁以下、70岁以上客人
-▸最多2人入住
-
-⏰入住退房
-▸入住：14:00后
-▸退房：12:00前｜退房后麻烦发消息告知
-
-🔒密码锁操作（两道门都是密码锁）
-▸204大门：{DOOR_PW}
-✔手背轻贴亮灯再输，输完按#结束
-✔输错按*删除，别着急避免误输
-▸002号门：{ROOM_PW}
-
-🛁房间设施使用
-▸热水器：提前通电，15分钟左右烧热即可用
-▸吹风机：面盆柜内
-▸洗衣机：阳台有｜房东阿姨12:00-14:30可能从阳台侧门进出使用，贵重物品关好阳台门；续住需午睡可联系协调
-▸电视：有优酷酷喵会员，登不上找房东
-▸WiFi：名称白熊｜密码bxklbw1990@.
-
-🌿阳台须知
-▸有隐藏纱门，灯串开关在墙面
-▸配晾衣架，可晾晒衣物
-▸有自动浇水系统，花草勿动（不浇水不施肥）
-▸爱护绿植，禁止损坏
-
-📌注意事项
-▸最多2人入住，房间设施/墙面请勿损坏
-▸退房请发消息告知房东
-▸有任何不足，随时反馈，我们及时整改
-▸周边小吃/景点，想要推荐随时问！
-❗️ ❗️ 人不在房间请关闭好阳台门，附近会有野猫捣乱的哦 ❗️ ❗️`
-}
-
-// 提取密码
-function extractPassword(text, isDoor) {
-  if (!text) return ''
-  // 大门（Ukey）：提取"开锁码："后面的内容，或所有空格分隔的数字组合
-  if (isDoor) {
-    // 先把数字提取出来，再把倒数第二段和最后一段合并（如 9393 4316 9200 5 → 9393 4316 92005）
-    const combine = (s) => {
-      const p = s.trim().split(/\s+/)
-      if (p.length > 1) { p[p.length - 2] += p.pop() }
-      return p.join(' ')
-    }
-    // 优先找"开锁码"后面的
-    const match = text.match(/开锁码[：:]\s*([\d\s]+)/)
-    if (match) return combine(match[1])
-    // 找所有空格分隔的数字组合（如 9393 4316 9200 5）
-    const grouped = text.match(/\d{4}\s+\d{4}\s+\d{4}\s+\d/)
-    if (grouped) return combine(grouped[0])
-  }
-  // 房间门（通通锁）：纯数字 6位以上
-  const longDigits = text.match(/\d{6,}/)
-  if (longDigits) return longDigits[0]
-  // 通用：空格分隔的多组数字
-  const grouped = text.match(/\d{4}\s+\d{4}\s+\d{3,}/)
-  if (grouped) return grouped[0].trim()
-  const digits = text.match(/\d{4,}/)
-  if (digits) return digits[0]
-  return ''
-}
-
-// DOM
-const doorInput = document.getElementById('doorInput')
-const roomInput = document.getElementById('roomInput')
-const doorResult = document.getElementById('doorResult')
-const roomResult = document.getElementById('roomResult')
-const doorPw = document.getElementById('doorPw')
-const roomPw = document.getElementById('roomPw')
-const output = document.getElementById('output')
-const genBtn = document.getElementById('genBtn')
-const copyBtn = document.getElementById('copyBtn')
-const room1Tab = document.getElementById('room1Tab')
-const room2Tab = document.getElementById('room2Tab')
-
-let currentRoom = 1
-let currentDoorPw = ''
-let currentRoomPw = ''
-// 每个房间独立存储输入原文和生成的文案
-const roomData = {
-  1: { doorInput: '', roomInput: '', doorPw: '', roomPw: '', html: '' },
-  2: { doorInput: '', roomInput: '', doorPw: '', roomPw: '', html: '' }
-}
-
-// 房间切换
-function switchRoom(num) {
-  // 切走前保存当前房间状态
-  roomData[currentRoom].doorInput = doorInput.value
-  roomData[currentRoom].roomInput = roomInput.value
-  roomData[currentRoom].doorPw = currentDoorPw
-  roomData[currentRoom].roomPw = currentRoomPw
-  roomData[currentRoom].html = output.innerHTML || ''
-
-  currentRoom = num
-  document.querySelectorAll('.room-tab').forEach(t => t.classList.toggle('active', t.dataset.room == num))
-
-  // 恢复目标房间状态
-  const d = roomData[num]
-  doorInput.value = d.doorInput
-  roomInput.value = d.roomInput
-  currentDoorPw = d.doorPw
-  currentRoomPw = d.roomPw
-  updateExtracted()
-  if (d.html) {
-    output.innerHTML = d.html
-    output.classList.add('show')
-  } else {
-    output.classList.remove('show')
-    output.innerHTML = ''
-  }
-}
-room1Tab.addEventListener('click', () => switchRoom(1))
-room2Tab.addEventListener('click', () => switchRoom(2))
-
-// 更新密码提取显示
-function updateExtracted() {
-  if (currentDoorPw) {
-    doorPw.textContent = currentDoorPw
-    doorResult.classList.add('show')
-  } else {
-    doorResult.classList.remove('show')
-  }
-  if (currentRoomPw) {
-    roomPw.textContent = currentRoomPw
-    roomResult.classList.add('show')
-  } else {
-    roomResult.classList.remove('show')
-  }
-}
-
-// 实时提取
-function onInput() {
-  currentDoorPw = extractPassword(doorInput.value, true)
-  currentRoomPw = extractPassword(roomInput.value, false)
-  updateExtracted()
-}
-
-doorInput.addEventListener('input', onInput)
-roomInput.addEventListener('input', onInput)
-
-// 生成
-genBtn.addEventListener('click', () => {
-  if (!currentDoorPw && !currentRoomPw) {
-    alert('请先粘贴密码通知')
-    return
-  }
-  const door = currentDoorPw || '❌未识别'
-  const room = currentRoomPw || '❌未识别'
-  let text = TPL[currentRoom]
-    .replace('{DOOR_PW}', door)
-    .replace('{ROOM_PW}', room)
-
-  output.innerHTML = text
-    .replace(door, `<span class="hl">${door}</span>`)
-    .replace(room, `<span class="hl">${room}</span>`)
-  output.classList.add('show')
-  roomData[currentRoom].html = output.innerHTML
-})
-
-// 复制
-copyBtn.addEventListener('click', () => {
-  const text = output.textContent
-  if (!text) return
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(text).then(() => {
-      alert('✅ 已复制，去微信粘贴发给客人吧！')
-    }).catch(() => fallbackCopy(text))
-  } else {
-    fallbackCopy(text)
-  }
-})
-
-function fallbackCopy(text) {
-  const ta = document.createElement('textarea')
-  ta.value = text
-  ta.style.position = 'fixed'
-  ta.style.opacity = '0'
-  document.body.appendChild(ta)
-  ta.select()
-  document.execCommand('copy')
-  document.body.removeChild(ta)
-  alert('✅ 已复制，去微信粘贴发给客人吧！')
-}
+        // ---- Mobile nav hamburger (simple) ----
+        // no-op: design fits mobile without hamburger
+    })();
 </script>
 </body>
 </html>
