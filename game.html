@@ -2,921 +2,965 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
 <title>白熊可丽饼 · 制作大挑战</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
-html,body{width:100%;height:100%;overflow:hidden;touch-action:none;background:#1a1510}
-body{
-  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Segoe UI",sans-serif;
-  display:flex;justify-content:center;align-items:center;
-}
-#app{
-  position:relative;width:100%;max-width:420px;height:100vh;max-height:780px;
-  overflow:hidden;background:#fff8f0;box-shadow:0 0 60px rgba(0,0,0,0.15);
-}
-.screen{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.4s}
-.screen.active{display:flex}
-
-/* ===== TITLE ===== */
-#titleScreen{
-  background:linear-gradient(180deg,#fff0e8 0%,#fce4d6 30%,#ffebe0 70%,#fff8f0 100%);
-  overflow:hidden;
-}
-.title-deco{
-  position:absolute;font-size:60px;opacity:0.12;animation:float 6s ease-in-out infinite;
-}
-.title-deco:nth-child(1){top:5%;left:8%;animation-delay:0s}
-.title-deco:nth-child(2){top:15%;right:10%;animation-delay:1.5s;font-size:45px}
-.title-deco:nth-child(3){bottom:25%;left:5%;animation-delay:3s;font-size:50px}
-.title-deco:nth-child(4){bottom:15%;right:8%;animation-delay:4s}
-@keyframes float{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-12px) rotate(5deg)}}
-
-.title-bear{
-  width:110px;height:110px;background:#fff;border-radius:50%;
-  position:relative;margin-bottom:16px;z-index:2;
-  box-shadow:0 8px 24px rgba(139,90,43,0.1);
-  animation:bounce 2.5s ease-in-out infinite;
-}
-@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-.title-bear .ear{
-  position:absolute;width:34px;height:34px;background:#f5e0cc;border-radius:50%;top:-8px;
-}
-.title-bear .ear.l{left:10px}.title-bear .ear.r{right:10px}
-.title-bear .ear::after{content:'';position:absolute;width:17px;height:17px;background:#ffb5b5;border-radius:50%;top:9px;left:9px}
-.title-bear .eye{
-  position:absolute;width:9px;height:11px;background:#4a3636;border-radius:50%;top:45px;
-}
-.title-bear .eye.l{left:28px}.title-bear .eye.r{right:28px}
-.title-bear .mouth{
-  position:absolute;width:14px;height:7px;border-bottom:2.5px solid #4a3636;border-radius:0 0 50% 50%;
-  top:62px;left:48px;
-}
-.title-bear .blush{
-  position:absolute;width:18px;height:10px;background:rgba(255,150,150,0.3);border-radius:50%;top:54px;
-}
-.title-bear .blush.l{left:14px}.title-bear .blush.r{right:14px}
-.title-bear .hat{
-  position:absolute;width:72px;height:36px;background:#fff;border-radius:36px 36px 6px 6px;
-  top:-16px;left:19px;box-shadow:0 2px 8px rgba(0,0,0,0.04);
-}
-.title-bear .hat::after{
-  content:'';position:absolute;width:44px;height:7px;background:#ff8a8a;border-radius:4px;
-  top:7px;left:14px;
-}
-
-.title h1{font-size:27px;font-weight:700;color:#5d4037;margin-bottom:2px;letter-spacing:3px;z-index:2}
-.title .sub{font-size:15px;color:#a1887f;margin-bottom:24px;letter-spacing:2px;z-index:2}
-.title .store{font-size:12px;color:#bcaba0;margin-bottom:8px;letter-spacing:3px;z-index:2}
-
-#startBtn{
-  padding:15px 56px;border:none;border-radius:30px;font-size:17px;font-weight:700;
-  background:linear-gradient(135deg,#ff8a8a,#ff6b6b);color:#fff;cursor:pointer;z-index:2;
-  box-shadow:0 6px 24px rgba(255,107,107,0.35);transition:transform 0.15s;letter-spacing:2px;
-}
-#startBtn:active{transform:scale(0.93)}
-
-/* ===== HUD ===== */
-#hud{
-  position:absolute;top:0;left:0;right:0;padding:10px 14px;height:40px;
-  display:flex;justify-content:space-between;align-items:center;z-index:10;
-  background:linear-gradient(180deg,rgba(255,248,240,0.97) 60%,transparent);
-  pointer-events:none;
-}
-#hud .hud-score{font-size:15px;font-weight:700;color:#5d4037;letter-spacing:1px}
-#hud .hud-score span{color:#e53935}
-.stage-dots{display:flex;gap:5px}
-.stage-dot{
-  width:9px;height:9px;border-radius:50%;border:2px solid #d7ccc8;
-  background:transparent;transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1);
-}
-.stage-dot.active{border-color:#ff8a8a;background:#ff8a8a;transform:scale(1.3)}
-.stage-dot.done{border-color:#a5d6a7;background:#a5d6a7}
-#hud .hud-stage{font-size:12px;font-weight:600;color:#a1887f;letter-spacing:1px}
-
-/* ===== CANVAS ===== */
-#gameCanvas{position:absolute;bottom:0;left:0;width:100%;height:calc(100% - 40px);display:block}
-
-/* ===== OVERLAY ===== */
-#overlay{
-  position:absolute;inset:0;display:none;align-items:center;justify-content:center;
-  z-index:20;animation:fadeIn 0.15s;
-}
-#overlay.show{display:flex}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-#overlay-text{
-  background:rgba(255,255,255,0.93);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-  border-radius:24px;padding:26px 34px;text-align:center;
-  box-shadow:0 12px 48px rgba(0,0,0,0.12);min-width:180px;
-  animation:popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
-}
-@keyframes popIn{from{transform:scale(0.7);opacity:0}to{transform:scale(1);opacity:1}}
-#overlay-text .big{font-size:44px;margin-bottom:6px}
-#overlay-text .msg{font-size:18px;font-weight:700;color:#5d4037}
-#overlay-text .sub{font-size:13px;color:#a1887f;margin-top:2px}
-
-/* ===== RESULT ===== */
-#resultScreen{
-  background:linear-gradient(180deg,#fff0e8 0%,#fce4d6 40%,#fff8f0 100%);
-  padding:20px;
-}
-.result-inner{display:flex;flex-direction:column;align-items:center;animation:popIn 0.5s cubic-bezier(0.34,1.56,0.64,1)}
-.result-bear{
-  width:70px;height:70px;background:#fff;border-radius:50%;position:relative;margin-bottom:10px;
-  box-shadow:0 4px 16px rgba(139,90,43,0.08);
-}
-.result-bear .ear{position:absolute;width:22px;height:22px;background:#f5e0cc;border-radius:50%;top:-5px}
-.result-bear .ear.l{left:6px}.result-bear .ear.r{right:6px}
-.result-bear .ear::after{content:'';position:absolute;width:11px;height:11px;background:#ffb5b5;border-radius:50%;top:6px;left:6px}
-.result-bear .eye{position:absolute;width:7px;height:9px;background:#4a3636;border-radius:50%;top:28px}
-.result-bear .eye.l{left:20px}.result-bear .eye.r{right:20px}
-.result-bear .mouth{
-  position:absolute;width:11px;height:5px;border-bottom:2px solid #4a3636;border-radius:0 0 50% 50%;top:40px;left:30px;
-}
-
-.result-rank{font-size:48px;font-weight:800;margin-bottom:1px;letter-spacing:3px;line-height:1.1}
-.result-rank.s{color:#ff6b6b}.result-rank.a{color:#ff8a65}.result-rank.b{color:#ffb74d}.result-rank.c{color:#a1887f}
-.result-label{font-size:14px;color:#8d6e63;margin-bottom:12px}
-.result-score{font-size:26px;font-weight:700;color:#5d4037;margin-bottom:4px}
-.result-breakdown{font-size:12px;color:#a1887f;margin-bottom:16px;line-height:1.8;text-align:center}
-
-.result-mem{
-  background:#fff;border-radius:16px;padding:14px 22px;margin-bottom:16px;text-align:center;
-  box-shadow:0 4px 16px rgba(0,0,0,0.05);width:calc(100% - 40px);max-width:300px;
-}
-.result-mem .mem-label{font-size:11px;color:#bcaaa4;margin-bottom:3px}
-.result-mem .mem-id{font-size:17px;font-weight:700;color:#5d4037;letter-spacing:1px}
-.result-mem .mem-note{font-size:10px;color:#a1887f;margin-top:3px}
-
-#replayBtn{
-  padding:13px 44px;border:none;border-radius:30px;font-size:15px;font-weight:700;
-  background:linear-gradient(135deg,#ff8a8a,#ff6b6b);color:#fff;cursor:pointer;
-  box-shadow:0 6px 24px rgba(255,107,107,0.3);transition:transform 0.15s;letter-spacing:2px;
-}
-#replayBtn:active{transform:scale(0.93)}
-
-@media(max-height:640px){
-  .title-bear{width:85px;height:85px;margin-bottom:12px}
-  .title-bear .ear{width:26px;height:26px;top:-6px}
-  .title-bear .ear.l{left:8px}.title-bear .ear.r{right:8px}
-  .title-bear .ear::after{width:13px;height:13px;top:7px;left:7px}
-  .title-bear .eye{width:7px;height:9px;top:35px}
-  .title-bear .eye.l{left:22px}.title-bear .eye.r{right:22px}
-  .title-bear .mouth{top:48px;left:38px}
-  .title-bear .blush{width:14px;height:8px;top:42px}
-  .title-bear .blush.l{left:12px}.title-bear .blush.r{right:12px}
-  .title-bear .hat{width:56px;height:28px;top:-12px;left:15px}
-  .title-bear .hat::after{width:34px;height:5px;top:6px;left:11px}
-  .title h1{font-size:22px}
-  .title .sub{font-size:13px;margin-bottom:18px}
-  #startBtn{padding:13px 44px;font-size:15px}
-  .result-rank{font-size:38px}
-  .result-score{font-size:22px}
-}
-@media(max-height:500px){.title-bear{display:none}}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#1a1510;touch-action:none;-webkit-tap-highlight-color:transparent}
+body{display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif}
+canvas{display:block;margin:auto}
 </style>
 </head>
 <body>
-<div id="app">
-
-  <!-- ===== TITLE ===== -->
-  <div id="titleScreen" class="screen active">
-    <div class="title-deco">🥞</div>
-    <div class="title-deco">🍓</div>
-    <div class="title-deco">🍌</div>
-    <div class="title-deco">✨</div>
-    <div class="title" style="display:flex;flex-direction:column;align-items:center">
-      <div class="title-bear">
-        <div class="ear l"></div><div class="ear r"></div>
-        <div class="eye l"></div><div class="eye r"></div>
-        <div class="blush l"></div><div class="blush r"></div>
-        <div class="mouth"></div>
-        <div class="hat"></div>
-      </div>
-      <div class="store">🐻 粮道街 · 白熊可丽饼屋</div>
-      <h1>可丽饼大挑战</h1>
-      <p class="sub">煎饼 · 接料 · 卷起</p>
-      <button id="startBtn">🥄 开始制作</button>
-    </div>
-  </div>
-
-  <!-- ===== GAME ===== -->
-  <div id="gameScreen" class="screen">
-    <div id="hud">
-      <div class="hud-score">🍓 <span id="scoreVal">0</span></div>
-      <div class="stage-dots">
-        <span class="stage-dot active" id="dot0"></span>
-        <span class="stage-dot" id="dot1"></span>
-        <span class="stage-dot" id="dot2"></span>
-      </div>
-      <div class="hud-stage" id="stageLabel">煎饼</div>
-    </div>
-    <canvas id="gameCanvas"></canvas>
-  </div>
-
-  <!-- ===== OVERLAY ===== -->
-  <div id="overlay"><div id="overlay-text"></div></div>
-
-  <!-- ===== RESULT ===== -->
-  <div id="resultScreen" class="screen">
-    <div class="result-inner">
-      <div class="result-bear">
-        <div class="ear l"></div><div class="ear r"></div>
-        <div class="eye l"></div><div class="eye r"></div>
-        <div class="mouth"></div>
-      </div>
-      <div class="result-rank" id="resultRank">S</div>
-      <div class="result-label" id="resultLabel">完美可丽饼！</div>
-      <div class="result-score" id="resultScore">总分: 0</div>
-      <div class="result-breakdown" id="resultBd"></div>
-      <div class="result-mem">
-        <div class="mem-label">📍 粮道街 · 白熊可丽饼屋</div>
-        <div class="mem-id">🐻 白熊可丽饼屋</div>
-        <div class="mem-note">好吃到转圈圈 ✨ 到店报"白熊"有惊喜</div>
-      </div>
-      <button id="replayBtn">🔄 再来一次</button>
-    </div>
-  </div>
-
-</div>
-
+<canvas id="c"></canvas>
 <script>
-// ==================== SOUND SYSTEM ====================
-const Sound = {
-  _ctx: null, _gain: null,
-  init() {
-    if (this._ctx) return
-    this._ctx = new (window.AudioContext || window.webkitAudioContext)()
-    this._gain = this._ctx.createGain()
-    this._gain.gain.value = 0.4
-    this._gain.connect(this._ctx.destination)
-  },
-  resume() { if (this._ctx && this._ctx.state === 'suspended') this._ctx.resume() },
-  _tone(freq, dur, type='sine', vol=0.3, delay=0) {
-    const t = this._ctx.currentTime + delay
-    const o = this._ctx.createOscillator()
-    const g = this._ctx.createGain()
-    o.type = type; o.frequency.value = freq
-    g.gain.setValueAtTime(vol, t)
-    g.gain.exponentialRampToValueAtTime(0.001, t + dur)
-    o.connect(g); g.connect(this._gain)
-    o.start(t); o.stop(t + dur)
-  },
-  _noise(dur, vol=0.08) {
-    const t = this._ctx.currentTime
-    const bufSize = this._ctx.sampleRate * dur
-    const buf = this._ctx.createBuffer(1, bufSize, this._ctx.sampleRate)
-    const data = buf.getChannelData(0)
-    for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i/bufSize, 2)
-    const src = this._ctx.createBufferSource()
-    src.buffer = buf
-    const g = this._ctx.createGain()
-    g.gain.value = vol
-    const f = this._ctx.createBiquadFilter()
-    f.type = 'bandpass'; f.frequency.value = 3000; f.Q.value = 0.5
-    src.connect(f); f.connect(g); g.connect(this._gain)
-    src.start(); src.stop(t + dur)
-  },
-  // === SFX ===
-  sizzle() { this._noise(0.3, 0.06) },
-  flip() { this._tone(300, 0.06, 'sine', 0.2); setTimeout(()=>this._tone(500,0.05,'sine',0.15),40) },
-  perfect() {
-    this._tone(523, 0.12, 'sine', 0.25)
-    setTimeout(()=>this._tone(659, 0.12, 'sine', 0.25), 80)
-    setTimeout(()=>this._tone(784, 0.25, 'sine', 0.3), 160)
-  },
-  good() {
-    this._tone(440, 0.1, 'sine', 0.2)
-    setTimeout(()=>this._tone(554, 0.2, 'sine', 0.2), 80)
-  },
-  miss() { this._tone(200, 0.15, 'sawtooth', 0.12); this._tone(160, 0.2, 'sawtooth', 0.08, 0.05) },
-  catchItem() {
-    this._tone(660, 0.06, 'sine', 0.2)
-    setTimeout(()=>this._tone(880, 0.08, 'sine', 0.15), 50)
-  },
-  rollTick() { this._tone(800, 0.04, 'sine', 0.15) },
-  rollPerfect() {
-    this._tone(880, 0.08, 'sine', 0.2); setTimeout(()=>this._tone(1100,0.12,'sine',0.2),60)
-  },
-  stageClear() {
-    [523,587,659,784].forEach((f,i)=>this._tone(f,0.15,'sine',0.2,i*0.1))
-  },
-  fanfare() {
-    [523,659,784,1047].forEach((f,i)=>this._tone(f,0.25,'sine',0.25,i*0.12))
-  },
-  click() { this._tone(600, 0.04, 'sine', 0.15) },
-}
-
-// ==================== CANVAS SETUP ====================
+// ==============================
+//  CANVAS SETUP
+// ==============================
 const W = 400, H = 700
-const canvas = document.getElementById('gameCanvas')
+const canvas = document.getElementById('c')
 const ctx = canvas.getContext('2d')
-let dpr = 1, scaleX = 1, scaleY = 1
-
-function resizeCanvas() {
-  const rect = canvas.parentElement.getBoundingClientRect()
-  const cw = rect.width, ch = rect.height - 40
-  dpr = Math.min(window.devicePixelRatio || 1, 2)
+let gScale = 1
+function resize() {
+  const vw = window.innerWidth, vh = window.innerHeight
+  const s = Math.min(vw / W, vh / H)
+  const dpr = Math.min(window.devicePixelRatio||1, 2)
   canvas.width = W * dpr; canvas.height = H * dpr
-  canvas.style.width = cw + 'px'; canvas.style.height = ch + 'px'
-  scaleX = cw / W; scaleY = ch / H
+  canvas.style.width = Math.floor(W * s) + 'px'
+  canvas.style.height = Math.floor(H * s) + 'px'
+  gScale = dpr
+  ctx.setTransform(dpr,0,0,dpr,0,0)
 }
+window.addEventListener('resize', resize)
 
-// ==================== DOM REFS ====================
-const $ = id => document.getElementById(id)
-const titleScreen = $('titleScreen'), gameScreen = $('gameScreen'), resultScreen = $('resultScreen')
-const overlay = $('overlay'), overlayText = $('overlay-text')
-const scoreVal = $('scoreVal'), stageLabel = $('stageLabel')
-
-// ==================== GAME STATE ====================
-const G = {
-  stage: 0, state: 'title', scores: [0,0,0],
-  // fry
-  fry: { t:0, speed:0, attempts:0, best:0, flipping:false, flipT:0, done:false },
-  // catch
-  catch: { t:20, items:[], spawnT:0, px:200, tx:200, particles:[], combo:0, maxCombo:0 },
-  // roll
-  roll: { progress:0, hits:0, total:8, targets:[], done:false, result:'' },
-  // general
-  totalScore: 0, lastTime: 0, dt: 0,
+// ==============================
+//  SOUND (louder, richer)
+// ==============================
+const S = { _ctx:null, _g:null, _ready:false }
+S.init = function() {
+  if (this._ctx) return
+  try {
+    this._ctx = new (window.AudioContext || window.webkitAudioContext)()
+    this._g = this._ctx.createGain()
+    this._g.gain.value = 0.6
+    this._g.connect(this._ctx.destination)
+    this._ready = true
+  } catch(e){}
 }
-const FRY_ZONE1 = 0.32, FRY_ZONE2 = 0.52, FRY_PERF1 = 0.38, FRY_PERF2 = 0.46
-const INGREDIENTS = [
-  {name:'草莓',emoji:'🍓',color:'#ef5350',pts:30,r:14},
-  {name:'香蕉',emoji:'🍌',color:'#ffd54f',pts:25,r:13},
-  {name:'奶油',emoji:'💭',color:'#fff9c4',pts:20,r:15},
-  {name:'巧克力',emoji:'🍫',color:'#795548',pts:25,r:12},
-  {name:'星星',emoji:'✨',color:'#ffd700',pts:15,r:10},
-]
-
-function resetGame() {
-  G.stage = 0; G.scores = [0,0,0]; G.totalScore = 0
-  initFry(); initCatch(); initRoll()
-  G.state = 'fry'; updateHUD()
+S.resume = function() {
+  if (this._ctx && this._ctx.state==='suspended') this._ctx.resume()
 }
-
-// ==================== OVERLAY ====================
-function showOverlay(emoji, msg, sub, dur=900) {
-  Sound.resume()
-  overlayText.innerHTML = `<div class="big">${emoji}</div><div class="msg">${msg}</div>${sub?`<div class="sub">${sub}</div>`:''}`
-  overlay.classList.add('show')
-  return new Promise(r => setTimeout(() => { overlay.classList.remove('show'); r() }, dur))
+S.tone = function(freq, dur, type='sine', vol=0.4, delay=0) {
+  if (!this._ready) return
+  const t = this._ctx.currentTime + delay
+  const o = this._ctx.createOscillator()
+  const g = this._ctx.createGain()
+  o.type = type; o.frequency.value = freq
+  const now = this._ctx.currentTime
+  g.gain.setValueAtTime(0, now)
+  g.gain.linearRampToValueAtTime(vol, t)
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur)
+  o.connect(g); g.connect(this._g)
+  o.start(t); o.stop(t + dur + 0.05)
 }
-
-// ==================== STAGE 1: FRY ====================
-function initFry() {
-  const f = G.fry
-  f.t = 0; f.speed = 0.6 + Math.random()*0.15; f.attempts = 0; f.best = 0
-  f.flipping = false; f.flipT = 0; f.done = false
+S.noise = function(dur, vol=0.1, freq=3000) {
+  if (!this._ready) return
+  const t = this._ctx.currentTime
+  const buf = this._ctx.createBuffer(1, ~~(this._ctx.sampleRate*dur), this._ctx.sampleRate)
+  const d = buf.getChannelData(0)
+  for (let i=0;i<d.length;i++) d[i] = (Math.random()*2-1) * Math.pow(1-i/d.length, 2)
+  const src = this._ctx.createBufferSource()
+  src.buffer = buf
+  const g = this._ctx.createGain(); g.gain.value = vol
+  const f = this._ctx.createBiquadFilter()
+  f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = 0.6
+  src.connect(f); f.connect(g); g.connect(this._g)
+  src.start(t)
 }
-
-function updateFry(dt) {
-  const f = G.fry
-  if (f.flipping) { f.flipT += dt*2; if (f.flipT>=1) { f.flipping=false; f.flipT=0 }; return }
-  if (f.done) return
-  f.t += f.speed * dt
-  if (f.t > 1) { f.t = 2 - f.t; f.speed = -Math.abs(f.speed) }
-  if (f.t < 0) { f.t = -f.t; f.speed = Math.abs(f.speed) }
+S.perfect = function() {
+  this.tone(523,0.12,'sine',0.45); this.tone(659,0.12,'triangle',0.3,0.08)
+  this.tone(784,0.25,'sine',0.5,0.16); this.tone(1047,0.3,'sine',0.15,0.16)
 }
+S.good = function() { this.tone(440,0.1,'sine',0.35); this.tone(554,0.2,'triangle',0.25,0.08) }
+S.miss = function() { this.tone(200,0.15,'sawtooth',0.15); this.tone(160,0.2,'sawtooth',0.1,0.05) }
+S.flip = function() { this.tone(300,0.06,'sine',0.3); setTimeout(()=>S.tone(500,0.05,'sine',0.25),40) }
+S.sizzle = function() { this.noise(0.3,0.08,3500) }
+S.catch = function() { this.tone(660,0.06,'sine',0.3); setTimeout(()=>S.tone(880,0.08,'sine',0.25),50) }
+S.rollTick = function() { this.tone(800,0.04,'sine',0.2) }
+S.rollPerfect = function() { this.tone(880,0.08,'sine',0.35); setTimeout(()=>S.tone(1100,0.12,'sine',0.3),60) }
+S.stageClear = function() { [523,587,659,784].forEach((f,i)=>this.tone(f,0.15,'sine',0.3,i*0.1)) }
+S.fanfare = function() { [523,659,784,1047].forEach((f,i)=>this.tone(f,0.25,'sine',0.4,i*0.12)) }
+S.click = function() { this.tone(600,0.04,'sine',0.25) }
 
-function getFryVal() { return Math.abs(G.fry.t) }
-
-const FRY_NUDGE = [
-  [0,0,0,0,0,1,1,1,1,2,2,2,3,3,3,3,3,4,4,4,4,5,5,6,6,7,7,8,8,9,9,10,10,10,10,10,10,10,10,10,9,9,8,8,7,7,6,6,5,5,4,4,3,3,3,3,3,2,2,2,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,1,1,1,2,2,3,3,4,4,5,6,7,8,9,10,10,10,9,8,7,6,5,4,4,3,3,2,2,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-]
-
-function drawFry() {
-  const f = G.fry, cx = W/2, cy = H/2 + 40
-  ctx.fillStyle = '#fff8f0'; ctx.fillRect(0,0,W,H)
-  drawBg('🍳', '🥞')
-
-  // pan shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.04)'
-  ctx.beginPath(); ctx.ellipse(cx+4, cy+48, 130, 14, 0, 0, Math.PI*2); ctx.fill()
-
-  // pan handle
-  ctx.strokeStyle = '#6d4c41'; ctx.lineWidth = 10; ctx.lineCap = 'round'
-  ctx.beginPath(); ctx.moveTo(-60+cx, 56+cy); ctx.lineTo(-180+cx, 80+cy); ctx.stroke()
-  ctx.strokeStyle = '#8d6e63'; ctx.lineWidth = 5
-  ctx.beginPath(); ctx.moveTo(-60+cx, 56+cy); ctx.lineTo(-180+cx, 80+cy); ctx.stroke()
-
-  // pan body
-  ctx.shadowColor = 'rgba(0,0,0,0.06)'; ctx.shadowBlur = 16; ctx.shadowOffsetY = 3
-  ctx.fillStyle = '#3e2c1a'
-  ctx.beginPath(); ctx.ellipse(cx, cy+4, 132, 38, 0, 0, Math.PI*2); ctx.fill()
-  ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0
-  ctx.fillStyle = '#2a1f14'
-  ctx.beginPath(); ctx.ellipse(cx, cy, 122, 32, 0, 0, Math.PI*2); ctx.fill()
-
-  // crepe batter
-  const val = getFryVal()
-  if (!f.flipping || f.flipT < 0.5) {
-    const d = val * 0.65 + 0.35
-    const r = Math.min(255, Math.round(190 + d*65))
-    const g = Math.min(200, Math.round(150 + d*50))
-    const b = Math.min(100, Math.round(55 + d*45))
-    ctx.fillStyle = `rgb(${r},${g},${b})`
-    const spread = 75 + val*30
-    ctx.beginPath(); ctx.ellipse(cx, cy-2, spread, 16, 0, 0, Math.PI*2); ctx.fill()
-    // bubbles!
-    if (!f.flipping && Math.random()<0.3) {
-      ctx.fillStyle = `rgba(255,255,200,${0.1+Math.random()*0.15})`
-      const bx = cx - 50 + Math.random()*100, by = cy-8 - Math.random()*4
-      ctx.beginPath(); ctx.arc(bx, by, 2+Math.random()*3, 0, Math.PI*2); ctx.fill()
-    }
-  }
-
-  // flipping crepe
-  if (f.flipping) {
-    const t = f.flipT, fy = -80 - Math.sin(t*Math.PI)*140, fx = Math.sin(t*Math.PI*1.2)*30, rot = t*Math.PI*1.8
-    ctx.save(); ctx.translate(cx+fx, cy+fy); ctx.rotate(rot)
-    ctx.shadowColor = 'rgba(0,0,0,0.1)'; ctx.shadowBlur = 12
-    ctx.fillStyle = '#d4a96a'; ctx.beginPath(); ctx.ellipse(0,0,48,9,0,0,Math.PI*2); ctx.fill()
-    ctx.fillStyle = '#c4955a'; ctx.beginPath()
-    ctx.ellipse(0,-1.5,44,7,0,0,Math.PI*2); ctx.fill()
-    ctx.restore()
-  }
-
-  // === GAUGE ===
-  const gx = 50, gy = 20, gw = W-100, gh = 20
-  ctx.fillStyle = '#f5eee8'; roundRect(ctx, gx-2, gy-2, gw+4, gh+4, 12); ctx.fill()
-  // good zone
-  ctx.fillStyle = '#c8e6c9'; roundRect(ctx, gx+gw*FRY_ZONE1, gy, gw*(FRY_ZONE2-FRY_ZONE1), gh, 6); ctx.fill()
-  // perfect zone
-  ctx.fillStyle = '#81c784'; roundRect(ctx, gx+gw*FRY_PERF1, gy, gw*(FRY_PERF2-FRY_PERF1), gh, 6); ctx.fill()
-  // labels
-  ctx.fillStyle = '#bcaaa4'; ctx.font = '9px sans-serif'; ctx.textAlign = 'center'
-  ctx.fillText('🔥 翻面时机', gx+gw/2, gy+gh+14)
-  ctx.fillText('生', gx+12, gy+gh+14); ctx.fillText('焦', gx+gw-12, gy+gh+14)
-  ctx.fillStyle = '#a5d6a7'; ctx.font = '7px sans-serif'
-  ctx.fillText('✓ 好', gx+gw*(FRY_ZONE1+FRY_ZONE2)/2, gy+gh/2+4)
-  ctx.fillStyle = '#66bb6a'; ctx.font = '7px sans-serif'
-  ctx.fillText('★ 完美', gx+gw*(FRY_PERF1+FRY_PERF2)/2, gy+gh/2+4)
-
-  // needle
-  const nx = gx + gw * val
-  ctx.shadowColor = 'rgba(0,0,0,0.1)'; ctx.shadowBlur = 4
-  ctx.fillStyle = '#e53935'
-  ctx.beginPath(); ctx.moveTo(nx, gy-3); ctx.lineTo(nx-7, gy+gh+3); ctx.lineTo(nx+7, gy+gh+3); ctx.closePath(); ctx.fill()
-  ctx.shadowBlur = 0
-  // needle center
-  ctx.fillStyle = '#c62828'; ctx.beginPath(); ctx.arc(nx, gy+gh/2, 3, 0, Math.PI*2); ctx.fill()
-
-  // attempts
-  ctx.fillStyle = '#8d6e63'; ctx.font = '13px sans-serif'; ctx.textAlign = 'center'
-  ctx.fillText(`❤️ ${3-f.attempts}`, W/2, H-40)
-  ctx.fillStyle = '#bcaaa4'; ctx.font = '11px sans-serif'
-  ctx.fillText('👆 点屏幕翻面！', W/2, H-16)
+// ==============================
+//  COLORS & UTILITIES
+// ==============================
+const C = {
+  bg:'#fff8f0', pink:'#ff8a8a', pinkL:'#ffb5b5', gold:'#ffb300',
+  mint:'#7ec8b8', cream:'#fff3e0', brown:'#8d6e63', dark:'#5d4037',
+  text:'#4e342e', green:'#81c784', red:'#e57373', purple:'#ce93d8',
+  yellow:'#fff176', orange:'#ff8a65', pan:'#3e2c1a', panIn:'#2a1f14',
 }
-
-function tapFry() {
-  const f = G.fry
-  if (f.flipping || f.done) return
-  Sound.resume()
-  f.attempts++
-  const val = getFryVal()
-  let emoji, msg, scr
-  if (val>=FRY_PERF1 && val<=FRY_PERF2) { emoji='🌟'; msg='完美翻面！'; scr=100; Sound.perfect() }
-  else if (val>=FRY_ZONE1 && val<=FRY_ZONE2) { emoji='👍'; msg='还不错~'; scr=60; Sound.good() }
-  else { emoji='😅'; msg='火候不对...'; scr=0; Sound.miss() }
-  if (scr > f.best) f.best = scr
-  f.flipping = true; Sound.flip()
-  showOverlay(emoji, msg, scr>0?`+${scr}分`:'').then(()=>{
-    if (f.attempts>=3 || f.best>=100) {
-      f.done = true; G.scores[0] = f.best
-      Sound.stageClear()
-      showOverlay('🍳', '煎饼完成！', `${f.best}分`, 700).then(startCatch)
-    } else { f.flipping=false; f.flipT=0 }
-  })
-}
-
-// ==================== STAGE 2: CATCH ====================
-function initCatch() {
-  const c = G.catch
-  c.t = 20; c.items = []; c.spawnT = 0; c.px = 200; c.tx = 200
-  c.particles = []; c.combo = 0; c.maxCombo = 0
-}
-
-function startCatch() {
-  G.stage = 1; G.state = 'catch'; stageLabel.textContent = '接食材'; updateDots()
-  initCatch(); updateHUD()
-}
-
-function updateCatch(dt) {
-  const c = G.catch
-  c.px += (c.tx - c.px) * 0.15
-
-  // spawn
-  c.spawnT -= dt
-  if (c.spawnT <= 0) {
-    const it = INGREDIENTS[Math.floor(Math.random()*INGREDIENTS.length)]
-    c.items.push({ x:30+Math.random()*(W-60), y:-20, ...it, speed:110+Math.random()*90, caught:false, wobble:Math.random()*6 })
-    c.spawnT = 0.35 + Math.random()*0.45
-  }
-
-  // move
-  for (let i=c.items.length-1; i>=0; i--) {
-    const it = c.items[i]
-    it.y += it.speed * dt; it.wobble += dt*3
-    const py = H - 95
-    if (!it.caught && it.y > py-35 && it.y < py+15 && Math.abs(it.x-c.px)<65) {
-      it.caught = true; c.combo++
-      if (c.combo > c.maxCombo) c.maxCombo = c.combo
-      Sound.catchItem()
-      for (let j=0; j<8; j++) c.particles.push({
-        x:it.x, y:py, vx:(Math.random()-0.5)*120, vy:-80-Math.random()*100,
-        life:1, color:it.color, pts:it.pts
-      })
-    }
-    if (it.y > H+30) { c.items.splice(i,1); c.combo = 0 }
-  }
-
-  // particles
-  for (let i=c.particles.length-1; i>=0; i--) {
-    const p = c.particles[i]
-    p.x += p.vx*dt; p.y += p.vy*dt; p.vy += 300*dt; p.life -= dt
-    if (p.life<=0) c.particles.splice(i,1)
-  }
-
-  // timer
-  c.t -= dt
-  if (c.t <= 0) {
-    c.t = 0
-    let total = 0
-    for (const p of c.particles) if (p.pts) total += p.pts
-    // also count caught items
-    G.scores[1] = Math.round(countCaught() + total)
-    Sound.stageClear()
-    showOverlay('🎯', '时间到！', `接到 ${G.scores[1]} 分`, 700).then(startRoll)
-  }
-}
-
-function countCaught() {
-  // We count particle total instead; simpler.
-  let s = 0
-  for (const p of G.catch.particles) s += p.pts || 0
-  return s
-}
-
-function drawCatch() {
-  const c = G.catch
-  ctx.fillStyle = '#fff8f0'; ctx.fillRect(0,0,W,H)
-  drawBg('🍓', '🍌')
-
-  // falling items
-  for (const it of c.items) {
-    if (it.caught) continue
-    drawIngredient(it.x + Math.sin(it.wobble)*2, it.y, it)
-  }
-
-  // particles
-  for (const p of c.particles) {
-    ctx.globalAlpha = p.life
-    ctx.fillStyle = p.color
-    ctx.beginPath(); ctx.arc(p.x, p.y, 4+3*p.life, 0, Math.PI*2); ctx.fill()
-    ctx.globalAlpha = 1
-  }
-
-  // plate
-  const px = c.px, py = H - 85
-  ctx.fillStyle = 'rgba(0,0,0,0.04)'
-  ctx.beginPath(); ctx.ellipse(px+2, py+7, 56, 13, 0, 0, Math.PI*2); ctx.fill()
-  ctx.fillStyle = '#f5f5f0'
-  ctx.beginPath(); ctx.ellipse(px, py, 56, 13, 0, 0, Math.PI*2); ctx.fill()
-  ctx.strokeStyle = '#e0d5c5'; ctx.lineWidth = 1.5
-  ctx.beginPath(); ctx.ellipse(px, py, 56, 13, 0, 0, Math.PI*2); ctx.stroke()
-  // crepe
-  ctx.fillStyle = '#d4a96a'
-  ctx.beginPath(); ctx.ellipse(px, py-3, 40, 9, 0, 0, Math.PI*2); ctx.fill()
-
-  // timer bar
-  const bw = W-80, bx = 40, by = 18
-  ctx.fillStyle = '#f0e8e0'; roundRect(ctx, bx, by, bw, 8, 4); ctx.fill()
-  const pct = c.t/20
-  ctx.fillStyle = pct>0.5?'#81c784':pct>0.25?'#ffb74d':'#e57373'
-  roundRect(ctx, bx, by, bw*pct, 8, 4); ctx.fill()
-  ctx.fillStyle = '#8d6e63'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'
-  ctx.fillText(`⏱ ${Math.ceil(c.t)}s`, W/2, by+24)
-
-  // combo
-  if (c.combo >= 3) {
-    ctx.fillStyle = '#ff6b6b'; ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'center'
-    ctx.fillText(`🔥 ${c.combo}连击！`, W/2, 60)
-  }
-
-  // instruction
-  ctx.fillStyle = '#bcaaa4'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center'
-  ctx.fillText('👆 左右滑动接住食材！', W/2, H-12)
-}
-
-function drawIngredient(x, y, it) {
-  ctx.save(); ctx.translate(x, y)
-  const r = it.r || 12
-  switch(it.name) {
-    case '草莓':
-      ctx.fillStyle = '#ef5350'; ctx.beginPath()
-      ctx.moveTo(0,-r-2); ctx.lineTo(-r-2,r); ctx.lineTo(r+2,r); ctx.closePath(); ctx.fill()
-      ctx.fillStyle = '#ffcdd2'
-      for (let sy=-2; sy<r-2; sy+=4) for (let sx=-r+4; sx<r-2; sx+=6) { ctx.beginPath(); ctx.arc(sx, sy, 1.2, 0, Math.PI*2); ctx.fill() }
-      ctx.fillStyle = '#4caf50'; ctx.fillRect(-3,-r-5, 6, 5)
-      break
-    case '香蕉':
-      ctx.fillStyle = '#ffd54f'; ctx.beginPath()
-      ctx.arc(0,0,r,0.15,Math.PI-0.15); ctx.lineTo(r-2,r-2); ctx.quadraticCurveTo(0,r+3,-r+2,r-2); ctx.closePath(); ctx.fill()
-      ctx.fillStyle = '#795548'; ctx.beginPath(); ctx.arc(-1,-4,1.5,0,Math.PI*2); ctx.fill()
-      break
-    case '奶油':
-      ctx.fillStyle = '#fff9c4'; ctx.beginPath()
-      ctx.arc(-6,3,10,0,Math.PI*2); ctx.arc(6,3,10,0,Math.PI*2); ctx.arc(0,-5,9,0,Math.PI*2); ctx.fill()
-      ctx.fillStyle = '#fff8e1'
-      ctx.beginPath(); ctx.arc(-4,-3,4.5,0,Math.PI*2); ctx.fill()
-      ctx.beginPath(); ctx.arc(5,-2,4,0,Math.PI*2); ctx.fill()
-      break
-    case '巧克力':
-      const s = r*1.3
-      ctx.fillStyle = '#795548'; roundRect(ctx, -s,-s, s*2, s*2, 3); ctx.fill()
-      ctx.fillStyle = '#5d4037'
-      ctx.fillRect(-2,-s, 2, s*2); ctx.fillRect(-s,-2, s*2, 2)
-      break
-    case '星星':
-      drawStar(ctx, 0, 0, 5, r+2, r/2.2); ctx.fillStyle = '#ffd700'; ctx.fill()
-      drawStar(ctx, 0, 0, 5, r/2, r/4.5); ctx.fillStyle = '#fff8e1'; ctx.fill()
-      break
-  }
-  ctx.restore()
-}
-
-function drawStar(ctx, cx, cy, sp, outer, inner) {
-  const step = Math.PI/sp; let rot = -Math.PI/2
+function roundRect(x,y,w,h,r) {
   ctx.beginPath()
-  ctx.moveTo(cx+outer*Math.cos(rot), cy+outer*Math.sin(rot))
-  for (let i=1; i<=sp*2; i++) {
-    const r = i%2 ? inner : outer
-    const a = rot + i*step; ctx.lineTo(cx+r*Math.cos(a), cy+r*Math.sin(a))
-  }
-  ctx.closePath()
-}
-
-function handleCatchMove(clientX) {
-  const rect = canvas.getBoundingClientRect()
-  G.catch.tx = Math.max(50, Math.min(W-50, (clientX - rect.left) * (W / rect.width)))
-}
-
-// ==================== STAGE 3: ROLL ====================
-function initRoll() {
-  const r = G.roll
-  r.progress = 0; r.hits = 0; r.total = 8; r.done = false; r.result = ''
-  r.targets = []
-  for (let i=0; i<r.total; i++) r.targets.push({
-    x: 50 + (W-100) * (i+0.5)/r.total, hit:false, perfect:false
-  })
-}
-
-function startRoll() {
-  G.stage = 2; G.state = 'roll'; stageLabel.textContent = '卷起来'; updateDots()
-  initRoll(); updateHUD()
-}
-
-function updateRoll(dt) {
-  const r = G.roll
-  if (r.done) return
-  if (r.hits < r.total) {
-    const t = r.targets[r.hits]
-    r.progress += (t.x - r.progress) * 0.1
-    if (Math.abs(r.progress - t.x) < 1.5) r.progress = t.x
-  }
-}
-
-function tapRoll() {
-  const r = G.roll
-  if (r.done || r.hits >= r.total) return
-  Sound.resume()
-  const t = r.targets[r.hits]
-  const diff = Math.abs(r.progress - t.x)
-  let emoji, msg
-  if (diff < 7) { emoji='🌟'; msg='完美！'; t.perfect=true; t.hit=true; Sound.rollPerfect() }
-  else if (diff < 20) { emoji='👍'; msg='还行~'; t.hit=true; Sound.good() }
-  else { emoji='😅'; msg='歪了...'; t.hit=false; Sound.rollTick() }
-  r.hits++
-  if (r.hits >= r.total) {
-    r.done = true
-    const perfs = r.targets.filter(t=>t.perfect).length
-    const hits = r.targets.filter(t=>t.hit).length
-    const scr = Math.min(150, Math.round(perfs/r.total*100 + hits/r.total*50))
-    G.scores[2] = scr
-    Sound.stageClear()
-    showOverlay('🎉', '可丽饼卷好了！', `${scr}分`, 700).then(showResult)
-  }
-}
-
-function drawRoll() {
-  ctx.fillStyle = '#fff8f0'; ctx.fillRect(0,0,W,H)
-  drawBg('🥞', '🍫')
-  const r = G.roll, cy = H/2 + 20
-
-  // table
-  ctx.fillStyle = 'rgba(139,90,43,0.04)'
-  ctx.beginPath(); ctx.ellipse(W/2, cy+80, 160, 30, 0, 0, Math.PI*2); ctx.fill()
-
-  // filling on crepe
-  ctx.fillStyle = '#ffcdd2'
-  ctx.beginPath(); ctx.ellipse(W/2, cy-4, 130, 50, 0, 0.08, Math.PI*2-0.08); ctx.fill()
-  ctx.fillStyle = '#fff9c4'
-  ctx.beginPath(); ctx.ellipse(W/2-25, cy-12, 35, 20, -0.15, 0, Math.PI*2); ctx.fill()
-  ctx.fillStyle = '#ef9a9a'
-  ctx.beginPath(); ctx.ellipse(W/2+25, cy-6, 22, 14, 0.25, 0, Math.PI*2); ctx.fill()
-  ctx.fillStyle = '#c8e6c9'
-  ctx.beginPath(); ctx.ellipse(W/2, cy-2, 18, 10, 0, 0, Math.PI*2); ctx.fill()
-  ctx.fillStyle = '#795548'
-  for (let i=0;i<8;i++) { ctx.beginPath(); ctx.arc(W/2-40+Math.random()*80, cy-4+Math.random()*10, 2+Math.random()*2, 0, Math.PI*2); ctx.fill() }
-
-  // rolled section (left side)
-  const rollEnd = Math.min(r.progress+15, W/2+60)
-  if (rollEnd > 35) {
-    ctx.shadowColor = 'rgba(0,0,0,0.06)'; ctx.shadowBlur = 8; ctx.shadowOffsetX = 2
-    ctx.fillStyle = '#c4955a'
-    roundRect(ctx, 30, cy-42, rollEnd-30, 84, 6); ctx.fill()
-    ctx.shadowBlur = 0
-    // spiral
-    ctx.strokeStyle = '#b5844a'; ctx.lineWidth = 1.5
-    for (let i=0; i<Math.min((rollEnd-30)/9, 12); i++) {
-      const sx = 36 + i*9
-      ctx.beginPath(); ctx.ellipse(sx, cy-2+(i%2===0?-8:8), 5, 12, 0, 0, Math.PI*2); ctx.stroke()
-    }
-  }
-
-  // targets
-  const visStart = Math.max(rollEnd, 50)
-  for (const t of r.targets) {
-    if (t.x < visStart-5) continue
-    const idx = r.targets.indexOf(t)
-    if (t.hit) {
-      ctx.fillStyle = t.perfect ? '#66bb6a' : '#ffb74d'
-      ctx.beginPath(); ctx.arc(t.x, cy-52, 7, 0, Math.PI*2); ctx.fill()
-      ctx.fillStyle = '#fff'; ctx.font = 'bold 8px sans-serif'; ctx.textAlign = 'center'
-      ctx.fillText(t.perfect?'★':'✓', t.x, cy-49)
-    } else {
-      ctx.strokeStyle = '#d7ccc8'; ctx.lineWidth = 2
-      ctx.beginPath(); ctx.arc(t.x, cy-52, 6, 0, Math.PI*2); ctx.stroke()
-      ctx.fillStyle = '#d7ccc8'; ctx.font = '8px sans-serif'; ctx.textAlign = 'center'
-      ctx.fillText(`${idx+1}`, t.x, cy-49)
-    }
-  }
-
-  // current target highlight
-  if (r.hits < r.total) {
-    const ct = r.targets[r.hits]
-    ctx.fillStyle = 'rgba(255,107,107,0.12)'
-    ctx.beginPath(); ctx.arc(ct.x, cy-52, 18, 0, Math.PI*2); ctx.fill()
-    // arrow
-    const arrowY = cy-70
-    ctx.fillStyle = '#ff6b6b'
-    ctx.beginPath(); ctx.moveTo(r.progress, arrowY);
-    ctx.lineTo(r.progress-8, arrowY-12); ctx.lineTo(r.progress+8, arrowY-12); ctx.closePath(); ctx.fill()
-    ctx.beginPath(); ctx.moveTo(r.progress, arrowY);
-    ctx.lineTo(r.progress-6, arrowY+8); ctx.lineTo(r.progress+6, arrowY+8); ctx.closePath(); ctx.fill()
-  }
-
-  // progress
-  const pbw = W-80, pbx = 40, pby = 18
-  ctx.fillStyle = '#f0e8e0'; roundRect(ctx, pbx, pby, pbw, 7, 4); ctx.fill()
-  ctx.fillStyle = '#ff8a8a'
-  roundRect(ctx, pbx, pby, pbw*(r.hits/r.total), 7, 4); ctx.fill()
-  ctx.fillStyle = '#8d6e63'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'
-  ctx.fillText(`卷 ${r.hits}/${r.total}`, W/2, pby+22)
-
-  ctx.fillStyle = '#bcaaa4'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center'
-  ctx.fillText('👆 点击对准标记点！', W/2, H-12)
-}
-
-// ==================== RESULT ====================
-function showResult() {
-  G.state = 'result'
-  G.totalScore = G.scores[0]+G.scores[1]+G.scores[2]
-  gameScreen.classList.remove('active')
-  resultScreen.classList.add('active')
-  Sound.fanfare()
-
-  let rank, label
-  if (G.totalScore>=280) { rank='S'; label='🌟 完美可丽饼大师！' }
-  else if (G.totalScore>=200) { rank='A'; label='🎉 可丽饼高手！' }
-  else if (G.totalScore>=120) { rank='B'; label='👍 还不错哦！' }
-  else { rank='C'; label='😊 再来一次吧！' }
-
-  const rk = $('resultRank'); rk.textContent = rank
-  rk.className = 'result-rank ' + rank.toLowerCase()
-  $('resultLabel').textContent = label
-  $('resultScore').textContent = `总分: ${G.totalScore}`
-  $('resultBd').innerHTML = `煎饼: <b>${G.scores[0]}</b> &nbsp;|&nbsp; 接食材: <b>${G.scores[1]}</b> &nbsp;|&nbsp; 卷起来: <b>${G.scores[2]}</b>`
-}
-
-// ==================== BACKGROUND ====================
-let bgItems = []
-function drawBg(e1, e2) {
-  // recreate bg dots lazily
-  if (bgItems.length===0) for (let i=0;i<14;i++) bgItems.push({
-    x:10+Math.random()*(W-20), y:10+Math.random()*(H-20), s:3+Math.random()*4, a:0.03+Math.random()*0.04
-  })
-  for (const b of bgItems) {
-    ctx.fillStyle = `rgba(139,90,43,${b.a})`
-    ctx.beginPath(); ctx.arc(b.x, b.y, b.s, 0, Math.PI*2); ctx.fill()
-  }
-  // emoji decorations
-  if (e1) { ctx.globalAlpha=0.1; ctx.font='28px sans-serif'; ctx.textAlign='center'
-    ctx.fillText(e1, 35, 45); ctx.fillText(e1, W-35, 55)
-    ctx.fillText(e2||'', 40, H-35); ctx.fillText(e2||'', W-40, H-45)
-    ctx.fillText(e1, W/2, 55)
-    ctx.globalAlpha=1
-  }
-}
-
-// ==================== HELPERS ====================
-function roundRect(ctx, x, y, w, h, r) {
-  ctx.beginPath()
-  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r)
+  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y)
+  ctx.quadraticCurveTo(x+w,y,x+w,y+r)
   ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h)
   ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r)
   ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath()
 }
+function shadow(blur, offX, offY, color) {
+  ctx.shadowColor = color||'rgba(0,0,0,0.1)'
+  ctx.shadowBlur = blur||12; ctx.shadowOffsetX = offX||0; ctx.shadowOffsetY = offY||3
+}
+function noShadow() { ctx.shadowColor='transparent'; ctx.shadowBlur=0; ctx.shadowOffsetX=0; ctx.shadowOffsetY=0 }
+function gradient(x,y,w,h,c1,c2) {
+  const g = ctx.createLinearGradient(x,y,x,y+h)
+  g.addColorStop(0,c1); g.addColorStop(1,c2); return g
+}
+function hGradient(x,y,w,h,c1,c2) {
+  const g = ctx.createLinearGradient(x,y,x+w,y)
+  g.addColorStop(0,c1); g.addColorStop(1,c2); return g
+}
+function drawStar(cx,cy,sp,outer,inner) {
+  const step = Math.PI/sp; let rot = -Math.PI/2
+  ctx.beginPath()
+  ctx.moveTo(cx+outer*Math.cos(rot),cy+outer*Math.sin(rot))
+  for (let i=1;i<=sp*2;i++) { const r=i%2?inner:outer; const a=rot+i*step; ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a)) }
+  ctx.closePath()
+}
+function lerp(a,b,t){return a+(b-a)*t}
 
-function updateHUD() {
-  const total = G.scores[0] + G.scores[1] + G.scores[2]
-  scoreVal.textContent = total
+// ==============================
+//  GAME STATE
+// ==============================
+const G = {
+  state: 'title', // title | fry | catch | roll | result
+  stage: 0, scores: [0,0,0], total: 0,
+  anim: 0, // global animation timer
+  // title
+  titlePulse: 0,
+  // fry
+  f: { t:0, speed:0, attempts:0, best:0, flipT:0, flipping:false, done:false, bubbles:[] },
+  // catch
+  c: { t:12, items:[], spawnT:0, px:200, tx:200, parts:[], combo:0, maxCombo:0, score:0 },
+  // roll
+  r: { progress:0, hits:0, total:6, targets:[], done:false },
+  // transition
+  transAlpha: 0,
 }
 
-function updateDots() {
-  for (let i=0; i<3; i++) {
-    const d = $('dot'+i)
-    d.classList.toggle('active', i===G.stage)
-    d.classList.toggle('done', i<G.stage)
+const INGREDIENTS = [
+  {name:'草莓', emoji:'🍓', color:'#ef5350', hl:'#ff8a80', pts:30, r:14},
+  {name:'香蕉', emoji:'🍌', color:'#ffd54f', hl:'#fff176', pts:25, r:13},
+  {name:'奶油', emoji:'💭', color:'#fff9c4', hl:'#ffffff', pts:20, r:15},
+  {name:'巧克力', emoji:'🍫', color:'#795548', hl:'#a1887f', pts:25, r:12},
+  {name:'星星', emoji:'✨', color:'#ffd700', hl:'#fff8e1', pts:15, r:10},
+]
+
+const FRY_Z1 = 0.30, FRY_Z2 = 0.54, FRY_P1 = 0.37, FRY_P2 = 0.47
+
+function resetG() {
+  G.state = 'fry'; G.stage = 0; G.scores = [0,0,0]; G.total = 0; G.transAlpha = 0
+  initFry(); initCatch(); initRoll()
+}
+
+// ==============================
+//  STAGE 1: FRY
+// ==============================
+function initFry() {
+  const f = G.f
+  f.t = 0; f.speed = 0.55 + Math.random()*0.15; f.attempts = 0; f.best = 0
+  f.flipT = 0; f.flipping = false; f.done = false
+  f.bubbles = []
+}
+function updateFry(dt) {
+  const f = G.f
+  if (f.flipping) { f.flipT += dt*2.5; if (f.flipT>=1) { f.flipping=false; f.flipT=0 }; return }
+  if (f.done) return
+  f.t += f.speed * dt
+  if (f.t>1) { f.t=2-f.t; f.speed=-Math.abs(f.speed) }
+  if (f.t<0) { f.t=-f.t; f.speed=Math.abs(f.speed) }
+  // bubbles
+  if (!f.flipping && Math.random()<0.4) f.bubbles.push({x:-50+Math.random()*100, y:0, r:1.5+Math.random()*3, life:1})
+  for (let i=f.bubbles.length-1;i>=0;i--) {
+    const b=f.bubbles[i]; b.life-=dt*1.5; b.y-=20*dt
+    if (b.life<=0) f.bubbles.splice(i,1)
+  }
+}
+function drawFry() {
+  const f = G.f, cx = W/2, cy = H/2 + 30
+  // background
+  const bg = ctx.createLinearGradient(0,0,0,H)
+  bg.addColorStop(0,'#fef5ee'); bg.addColorStop(0.5,'#fce8d8'); bg.addColorStop(1,'#fdf0e6')
+  ctx.fillStyle = bg; ctx.fillRect(0,0,W,H)
+  // decorative circles
+  for (let i=0;i<6;i++) { ctx.fillStyle=`rgba(255,220,200,${0.12+Math.sin(G.anim*0.5+i)*0.04})`; ctx.beginPath(); ctx.arc(50+i*70,30+Math.sin(i)*10,20,0,Math.PI*2); ctx.fill() }
+
+  // === PAN ===
+  const panY = cy + 8
+  // pan shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.04)'
+  ctx.beginPath(); ctx.ellipse(cx+4, panY+36, 134, 12, 0, 0, Math.PI*2); ctx.fill()
+
+  // handle
+  ctx.strokeStyle = '#5d4037'; ctx.lineWidth = 10; ctx.lineCap = 'round'
+  ctx.beginPath(); ctx.moveTo(-55+cx, 50+panY); ctx.lineTo(-185+cx, 72+panY); ctx.stroke()
+  ctx.strokeStyle = '#795548'; ctx.lineWidth = 5
+  ctx.beginPath(); ctx.moveTo(-55+cx, 50+panY); ctx.lineTo(-185+cx, 72+panY); ctx.stroke()
+
+  // pan body (outer)
+  shadow(16, 0, 4, 'rgba(0,0,0,0.08)')
+  ctx.fillStyle = '#3e2c1a'
+  ctx.beginPath(); ctx.ellipse(cx, panY, 136, 42, 0, 0, Math.PI*2); ctx.fill()
+  noShadow()
+  // pan inner
+  ctx.fillStyle = '#2a1f14'
+  ctx.beginPath(); ctx.ellipse(cx, panY-2, 126, 36, 0, 0, Math.PI*2); ctx.fill()
+  // pan rim highlight
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 2
+  ctx.beginPath(); ctx.ellipse(cx, panY-2, 124, 34, 0, 0, Math.PI*2); ctx.stroke()
+
+  // === CREPE BATTER ===
+  const val = Math.abs(f.t)
+  if (!f.flipping || f.flipT<0.4) {
+    const d = val*0.6 + 0.4
+    const r = Math.min(240, 190+~~(d*60))
+    const g2 = Math.min(210, 150+~~(d*60))
+    const b2 = Math.min(110, 55+~~(d*55))
+    const spread = 72 + val*35
+    // crepe body
+    const cGrad = ctx.createRadialGradient(cx-10, panY-10, 5, cx, panY-4, spread)
+    cGrad.addColorStop(0, `rgb(${r+15},${g2+15},${b2+10})`)
+    cGrad.addColorStop(0.7, `rgb(${r},${g2},${b2})`)
+    cGrad.addColorStop(1, `rgb(${r-30},${g2-20},${b2-10})`)
+    ctx.fillStyle = cGrad
+    shadow(8, 0, 2, 'rgba(0,0,0,0.06)')
+    ctx.beginPath(); ctx.ellipse(cx, panY-6, spread, 17, 0, 0, Math.PI*2); ctx.fill()
+    noShadow()
+    // bubbles
+    for (const b of f.bubbles) {
+      ctx.fillStyle = `rgba(255,255,220,${b.life*0.3})`
+      ctx.beginPath(); ctx.arc(cx+b.x, panY-8+b.y, b.r, 0, Math.PI*2); ctx.fill()
+    }
+    // steam
+    for (let i=0;i<3;i++) {
+      const sx = cx-30+i*30+Math.sin(G.anim*2+i)*8, sy = panY-40-i*15-Math.sin(G.anim*1.5+i*2)*5
+      ctx.fillStyle = `rgba(255,255,255,${0.08+Math.sin(G.anim*2+i)*0.04})`
+      ctx.beginPath(); ctx.ellipse(sx, sy, 6, 10, 0, 0, Math.PI*2); ctx.fill()
+    }
+  }
+
+  // === FLIPPING CREPE ===
+  if (f.flipping) {
+    const t = f.flipT
+    const fx = Math.sin(t*Math.PI*1.3)*35, fy = -90 - Math.sin(t*Math.PI)*160, rot = t*Math.PI*2
+    ctx.save(); ctx.translate(cx+fx, panY+fy); ctx.rotate(rot)
+    shadow(14, 2, 4, 'rgba(0,0,0,0.12)')
+    const cGrad = ctx.createRadialGradient(-8, 0, 5, 0, 0, 48)
+    cGrad.addColorStop(0, '#e8c088'); cGrad.addColorStop(1, '#c4955a')
+    ctx.fillStyle = cGrad
+    ctx.beginPath(); ctx.ellipse(0,0,48,10,0,0,Math.PI*2); ctx.fill()
+    noShadow(); ctx.restore()
+  }
+
+  // === GAUGE ===
+  const gx = 38, gy = 18, gw = W-76, gh = 20
+  // gauge bg
+  shadow(4, 0, 1, 'rgba(0,0,0,0.04)')
+  ctx.fillStyle = '#f0eae4'
+  roundRect(gx-2, gy-2, gw+4, gh+4, 12); ctx.fill()
+  noShadow()
+  // good zone
+  ctx.fillStyle = '#c8e6c9'
+  roundRect(gx+gw*FRY_Z1, gy, gw*(FRY_Z2-FRY_Z1), gh, 6); ctx.fill()
+  // perfect zone
+  const pGrad = gradient(0, 0, 0, gh, '#81c784', '#66bb6a')
+  ctx.fillStyle = pGrad
+  roundRect(gx+gw*FRY_P1, gy, gw*(FRY_P2-FRY_P1), gh, 6); ctx.fill()
+  // labels
+  ctx.fillStyle = '#bcaaa4'; ctx.font = '9px sans-serif'; ctx.textAlign = 'center'
+  ctx.fillText('🔥 翻面时机', gx+gw/2, gy+gh+16)
+  ctx.fillStyle = '#d7ccc8'; ctx.font = '8px sans-serif'; ctx.textAlign = 'left'
+  ctx.fillText('← 生', gx+6, gy+gh/2+3)
+  ctx.textAlign = 'right'
+  ctx.fillText('焦 →', gx+gw-6, gy+gh/2+3)
+  // zone labels
+  ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = 'bold 7px sans-serif'; ctx.textAlign = 'center'
+  ctx.fillText('✓ 好', gx+gw*(FRY_Z1+FRY_Z2)/2, gy+gh/2+3)
+  ctx.fillStyle = '#fff'; ctx.font = 'bold 7px sans-serif'
+  ctx.fillText('★ 完美', gx+gw*(FRY_P1+FRY_P2)/2, gy+gh/2+3)
+
+  // needle
+  const nx = gx + gw * val
+  shadow(6, 0, 1, 'rgba(229,57,53,0.3)')
+  ctx.fillStyle = '#e53935'
+  ctx.beginPath(); ctx.moveTo(nx, gy-4); ctx.lineTo(nx-8, gy+gh+4); ctx.lineTo(nx+8, gy+gh+4); ctx.closePath(); ctx.fill()
+  noShadow()
+  ctx.fillStyle = '#c62828'; ctx.beginPath(); ctx.arc(nx, gy+gh/2, 3, 0, Math.PI*2); ctx.fill()
+
+  // HUD
+  ctx.fillStyle = '#8d6e63'; ctx.font = '14px sans-serif'; ctx.textAlign = 'center'
+  ctx.fillStyle = '#8d6e63'; ctx.font = '13px sans-serif'; ctx.textAlign = 'center'
+  const bestStr = f.best>0 ? `最佳: ${f.best}分  ` : ''
+  ctx.fillText(`${bestStr}👆 点击翻面  ${f.best>=100?'✅ 完美通过!':''}`, W/2, H-38)
+  ctx.fillStyle = '#bcaaa4'; ctx.font = '12px sans-serif'
+  ctx.fillText('多翻几次，到🌟完美区域为止！', W/2, H-14)
+  // stage indicator
+  ctx.fillStyle = '#d7ccc8'; ctx.font = '10px sans-serif'
+  ctx.fillText('1/3 · 煎饼', W/2, 56)
+}
+
+function tapFry() {
+  const f = G.f
+  if (f.flipping || f.done) return; S.resume()
+  f.attempts++
+  const val = Math.abs(f.t)
+  let emoji, msg, scr
+  if (val>=FRY_P1 && val<=FRY_P2) { emoji='🌟'; msg='完美翻面！'; scr=100; S.perfect(); screenShake(6) }
+  else if (val>=FRY_Z1 && val<=FRY_Z2) { emoji='👍'; msg='还不错~'; scr=60; S.good() }
+  else { emoji='😅'; msg='火候不对...'; scr=0; S.miss() }
+  if (scr>f.best) f.best=scr
+  f.flipping=true; S.flip()
+  showOverlay(emoji, msg, scr>0?`+${scr}`:'', 800).then(()=>{
+    if (f.best>=100) {
+      f.done=true; G.scores[0]=f.best; S.stageClear()
+      showOverlay('🍳', '煎饼完成！', `${f.best}分`, 700).then(()=>{ G.transAlpha=0; startCatch() })
+    } else { f.flipping=false; f.flipT=0 }
+  })
+}
+
+// ==============================
+//  STAGE 2: CATCH
+// ==============================
+function initCatch() {
+  const c = G.c
+  c.t = 12; c.items=[]; c.spawnT=0; c.px=200; c.tx=200
+  c.parts=[]; c.combo=0; c.maxCombo=0; c.score=0
+}
+function startCatch() { G.stage=1; G.state='catch'; initCatch() }
+
+function updateCatch(dt) {
+  const c = G.c
+  c.px = lerp(c.px, c.tx, 0.18)
+  c.spawnT -= dt
+  if (c.spawnT<=0) {
+    const it = INGREDIENTS[~~(Math.random()*INGREDIENTS.length)]
+    c.items.push({x:30+Math.random()*(W-60), y:-25, ...it, speed:100+Math.random()*100, caught:false, wob:Math.random()*6})
+    c.spawnT = 0.35 + Math.random()*0.5
+  }
+  for (let i=c.items.length-1;i>=0;i--) {
+    const it=c.items[i]; it.y+=it.speed*dt; it.wob+=dt*3
+    const py=H-90
+    if (!it.caught && it.y>py-35 && it.y<py+15 && Math.abs(it.x-c.px)<62) {
+      it.caught=true; c.combo++; c.score+=it.pts
+      if (c.combo>c.maxCombo) c.maxCombo=c.combo
+      S.catch()
+      for (let j=0;j<10;j++) c.parts.push({x:it.x, y:py, vx:(Math.random()-0.5)*150, vy:-60-Math.random()*120, life:1, color:it.color, pts:it.pts, r:2+Math.random()*4})
+    }
+    if (it.y>H+30) { c.items.splice(i,1); c.combo=0 }
+  }
+  for (let i=c.parts.length-1;i>=0;i--) {
+    const p=c.parts[i]; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=350*dt; p.life-=dt
+    if (p.life<=0) c.parts.splice(i,1)
+  }
+  c.t -= dt
+  if (c.t<=0) { c.t=0; G.scores[1]=c.score; S.stageClear()
+    showOverlay('🎯', '时间到！', `${c.score}分`, 700).then(()=>{ G.transAlpha=0; startRoll() })
   }
 }
 
-// ==================== INPUT ====================
-let isDown = false
+function drawCatch() {
+  const c = G.c
+  // bg
+  const bg = ctx.createLinearGradient(0,0,0,H)
+  bg.addColorStop(0,'#fef5ee'); bg.addColorStop(0.5,'#fce8d8'); bg.addColorStop(1,'#fdf0e6')
+  ctx.fillStyle = bg; ctx.fillRect(0,0,W,H)
+  // decor
+  for (let i=0;i<5;i++) { ctx.fillStyle=`rgba(255,200,180,${0.08})`; ctx.beginPath(); ctx.arc(60+i*80,100+Math.sin(i)*40,15,0,Math.PI*2); ctx.fill() }
 
-function setupInput() {
-  canvas.addEventListener('touchstart', e => {
-    e.preventDefault(); Sound.resume()
-    const t = e.touches[0]; isDown = true
-    handleGameTap(t.clientX, t.clientY)
-  }, {passive:false})
-  canvas.addEventListener('touchmove', e => {
-    e.preventDefault()
-    if (G.state==='catch') handleCatchMove(e.touches[0].clientX)
-  }, {passive:false})
-  canvas.addEventListener('touchend', e => { e.preventDefault(); isDown=false }, {passive:false})
-  canvas.addEventListener('mousedown', e => { Sound.resume(); isDown=true; handleGameTap(e.clientX, e.clientY) })
-  canvas.addEventListener('mousemove', e => { if (G.state==='catch' && isDown) handleCatchMove(e.clientX) })
-  canvas.addEventListener('mouseup', () => { isDown=false })
-  canvas.addEventListener('mouseleave', () => { isDown=false })
+  // items
+  for (const it of c.items) {
+    if (it.caught) continue
+    ctx.save(); ctx.translate(it.x+Math.sin(it.wob)*2, it.y)
+    switch(it.name) {
+      case '草莓':
+        shadow(6,1,2,'rgba(239,83,80,0.3)')
+        ctx.fillStyle = '#ef5350'
+        ctx.beginPath(); ctx.moveTo(0,-15); ctx.lineTo(-12,10); ctx.lineTo(12,10); ctx.closePath(); ctx.fill()
+        noShadow()
+        ctx.fillStyle = '#ffcdd2'
+        for (let sy=-2;sy<8;sy+=5) for (let sx=-9;sx<10;sx+=6) { ctx.beginPath(); ctx.arc(sx,sy,1.4,0,Math.PI*2); ctx.fill() }
+        ctx.fillStyle='#4caf50'; ctx.fillRect(-3,-17,6,5)
+        ctx.fillStyle='#81c784'; ctx.fillRect(-2,-16,4,3)
+        break
+      case '香蕉':
+        shadow(6,1,2,'rgba(255,213,79,0.3)')
+        ctx.fillStyle='#ffd54f'
+        ctx.beginPath(); ctx.arc(0,0,13,0.15,Math.PI-0.15); ctx.lineTo(11,9); ctx.quadraticCurveTo(0,14,-11,9); ctx.closePath(); ctx.fill()
+        noShadow()
+        ctx.fillStyle='#795548'; ctx.beginPath(); ctx.arc(-1,-4,1.5,0,Math.PI*2); ctx.fill()
+        break
+      case '奶油':
+        shadow(6,1,2,'rgba(0,0,0,0.08)')
+        ctx.fillStyle='#fff9c4'
+        ctx.beginPath(); ctx.arc(-7,4,11,0,Math.PI*2); ctx.arc(7,4,11,0,Math.PI*2); ctx.arc(0,-6,10,0,Math.PI*2); ctx.fill()
+        noShadow()
+        ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(-4,-3,5,0,Math.PI*2); ctx.fill()
+        ctx.beginPath(); ctx.arc(5,-2,4.5,0,Math.PI*2); ctx.fill()
+        break
+      case '巧克力':
+        shadow(6,1,2,'rgba(121,85,72,0.3)')
+        ctx.fillStyle='#795548'; roundRect(-10,-10,20,20,3); ctx.fill()
+        noShadow()
+        ctx.fillStyle='#5d4037'
+        ctx.fillRect(-2,-10,2,20); ctx.fillRect(-10,-2,20,2)
+        ctx.fillStyle='#a1887f'; ctx.fillRect(-6,-6,2,2); ctx.fillRect(2,2,2,2)
+        break
+      case '星星':
+        shadow(6,1,2,'rgba(255,215,0,0.3)')
+        ctx.fillStyle='#ffd700'; drawStar(0,0,5,13,5.5); ctx.fill()
+        noShadow()
+        ctx.fillStyle='#fff8e1'; drawStar(0,0,5,6,2.5); ctx.fill()
+        break
+    }
+    ctx.restore()
+  }
+
+  // particles
+  for (const p of c.parts) {
+    ctx.globalAlpha = p.life
+    ctx.fillStyle = p.color
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r*p.life, 0, Math.PI*2); ctx.fill()
+    ctx.globalAlpha = 1
+  }
+
+  // plate
+  const px = c.px, py = H-80
+  shadow(8, 2, 4, 'rgba(0,0,0,0.06)')
+  ctx.fillStyle = '#f5f5f0'
+  ctx.beginPath(); ctx.ellipse(px, py, 58, 14, 0, 0, Math.PI*2); ctx.fill()
+  noShadow()
+  ctx.strokeStyle = '#e0d5c5'; ctx.lineWidth = 1.5
+  ctx.beginPath(); ctx.ellipse(px, py, 58, 14, 0, 0, Math.PI*2); ctx.stroke()
+  // crepe on plate
+  const crGrad = ctx.createRadialGradient(px-8, py-6, 4, px, py-2, 42)
+  crGrad.addColorStop(0, '#e8c088'); crGrad.addColorStop(1, '#c4955a')
+  ctx.fillStyle = crGrad
+  ctx.beginPath(); ctx.ellipse(px, py-3, 42, 10, 0, 0, Math.PI*2); ctx.fill()
+
+  // timer bar
+  const bw = W-76, bx = 38, by = 16
+  shadow(3, 0, 1, 'rgba(0,0,0,0.04)')
+  ctx.fillStyle = '#ede5dd'; roundRect(bx, by, bw, 9, 5); ctx.fill()
+  noShadow()
+  const pct = c.t/12
+  const barCol = pct>0.5?'#81c784':pct>0.25?'#ffb74d':'#e57373'
+  ctx.fillStyle = barCol
+  roundRect(bx, by, bw*pct, 9, 5); ctx.fill()
+  // time text
+  ctx.fillStyle = '#8d6e63'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'
+  ctx.fillText(`⏱ ${Math.ceil(c.t)}s`, W/2, by+24)
+
+  // combo
+  if (c.combo>=3) {
+    ctx.fillStyle = 'rgba(255,107,107,0.9)'; ctx.font = 'bold 18px sans-serif'; ctx.textAlign = 'center'
+    shadow(10, 0, 0, 'rgba(255,107,107,0.3)')
+    ctx.fillText(`🔥 ${c.combo}连击！`, W/2, 62)
+    noShadow()
+  }
+
+  // score
+  ctx.fillStyle = '#5d4037'; ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'right'
+  ctx.fillText(`${G.scores[0]+c.score}`, W-18, 42)
+
+  // instruction
+  ctx.fillStyle = '#bcaaa4'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center'
+  ctx.fillText('👆 左右滑动 · 接住食材！', W/2, H-12)
+  // stage
+  ctx.fillStyle = '#d7ccc8'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center'
+  ctx.fillText('2/3 · 接食材', W/2, 53)
 }
 
-function handleGameTap(cx, cy) {
-  switch (G.state) {
+function catchMove(cx) { G.c.tx = Math.max(55, Math.min(W-55, cx)) }
+
+// ==============================
+//  STAGE 3: ROLL
+// ==============================
+function initRoll() {
+  const r = G.r
+  r.progress = 35; r.hits = 0; r.total = 6; r.done = false
+  r.targets = []
+  for (let i=0;i<r.total;i++) r.targets.push({ x:45+(W-90)*(i+0.5)/r.total, hit:false, perfect:false })
+}
+function startRoll() { G.stage=2; G.state='roll'; initRoll() }
+
+function updateRoll(dt) {
+  const r = G.r
+  if (r.done) return
+  if (r.hits<r.total) {
+    const t = r.targets[r.hits]
+    r.progress = lerp(r.progress, t.x, 0.12)
+  }
+}
+
+function drawRoll() {
+  const r = G.r
+  // bg
+  const bg = ctx.createLinearGradient(0,0,0,H)
+  bg.addColorStop(0,'#fef5ee'); bg.addColorStop(0.4,'#fce8d8'); bg.addColorStop(1,'#fdf0e6')
+  ctx.fillStyle = bg; ctx.fillRect(0,0,W,H)
+  for (let i=0;i<4;i++) { ctx.fillStyle=`rgba(255,210,190,${0.06})`; ctx.beginPath(); ctx.arc(80+i*90,70+Math.sin(i)*30,18,0,Math.PI*2); ctx.fill() }
+
+  const cy = H/2
+
+  // === CREPE TABLE ===
+  // table surface
+  ctx.fillStyle = 'rgba(139,90,43,0.03)'
+  ctx.beginPath(); ctx.ellipse(W/2, cy+90, 170, 35, 0, 0, Math.PI*2); ctx.fill()
+
+  // === CREPE WITH FILLING ===
+  // filling base
+  shadow(8, 2, 3, 'rgba(0,0,0,0.04)')
+  ctx.fillStyle = '#ffcdd2'
+  ctx.beginPath(); ctx.ellipse(W/2, cy+2, 140, 52, 0, 0.06, Math.PI*2-0.06); ctx.fill()
+  noShadow()
+
+  // cream layer
+  ctx.fillStyle = '#fff9c4'
+  ctx.beginPath(); ctx.ellipse(W/2-30, cy-8, 38, 20, -0.12, 0, Math.PI*2); ctx.fill()
+  // strawberry pieces
+  ctx.fillStyle = '#ef5350'
+  ctx.beginPath(); ctx.arc(W/2+20, cy-10, 10, 0, Math.PI*2); ctx.fill()
+  ctx.beginPath(); ctx.arc(W/2+40, cy-4, 8, 0, Math.PI*2); ctx.fill()
+  // banana slices
+  ctx.fillStyle = '#ffd54f'
+  ctx.beginPath(); ctx.ellipse(W/2-10, cy, 8, 6, 0.3, 0, Math.PI*2); ctx.fill()
+  ctx.beginPath(); ctx.ellipse(W/2-45, cy-2, 7, 5, -0.2, 0, Math.PI*2); ctx.fill()
+  // chocolate drizzle
+  ctx.strokeStyle = '#795548'; ctx.lineWidth = 2.5; ctx.lineCap = 'round'
+  ctx.beginPath()
+  ctx.moveTo(W/2-40, cy-15); ctx.quadraticCurveTo(W/2, cy-25, W/2+35, cy-12)
+  ctx.stroke()
+  ctx.beginPath()
+  ctx.moveTo(W/2-20, cy-18); ctx.quadraticCurveTo(W/2+10, cy-22, W/2+20, cy-16)
+  ctx.stroke()
+
+  // === ROLLED SECTION ===
+  const rollEnd = Math.max(30, Math.min(r.progress + 10, W/2 + 60))
+  if (rollEnd > 35) {
+    shadow(8, 3, 3, 'rgba(0,0,0,0.06)')
+    const rGrad = gradient(25, cy-48, 0, 96, '#d4a96a', '#b5844a')
+    ctx.fillStyle = rGrad
+    roundRect(28, cy-48, rollEnd-28, 96, 8); ctx.fill()
+    noShadow()
+    // spiral texture
+    ctx.strokeStyle = 'rgba(181,132,74,0.4)'; ctx.lineWidth = 1.5
+    for (let i=0;i<Math.min((rollEnd-35)/9,10);i++) {
+      const sx = 34 + i*9
+      ctx.beginPath(); ctx.ellipse(sx, cy+(i%2===0?-10:10), 5, 14, 0, 0, Math.PI*2); ctx.stroke()
+    }
+  }
+
+  // === TARGET MARKERS ===
+  const visStart = Math.max(rollEnd, 45)
+  for (const t of r.targets) {
+    if (t.x < visStart-5) continue
+    const idx = r.targets.indexOf(t)
+    if (t.hit) {
+      // hit marker
+      shadow(4,0,0,t.perfect?'rgba(102,187,106,0.3)':'rgba(255,183,77,0.3)')
+      ctx.fillStyle = t.perfect ? '#66bb6a' : '#ffb74d'
+      ctx.beginPath(); ctx.arc(t.x, cy-60, 9, 0, Math.PI*2); ctx.fill()
+      noShadow()
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center'
+      ctx.fillText(t.perfect?'★':'✓', t.x, cy-57)
+    } else {
+      // ring marker
+      ctx.strokeStyle = '#d7ccc8'; ctx.lineWidth = 2.5
+      ctx.beginPath(); ctx.arc(t.x, cy-60, 8, 0, Math.PI*2); ctx.stroke()
+      ctx.fillStyle = '#d7ccc8'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center'
+      ctx.fillText(`${idx+1}`, t.x, cy-57)
+    }
+  }
+
+  // === CURRENT TARGET HIGHLIGHT ===
+  if (r.hits < r.total) {
+    const ct = r.targets[r.hits]
+    // pulse ring
+    const pulseR = 16 + Math.sin(G.anim*4)*4
+    ctx.strokeStyle = `rgba(255,107,107,${0.2+Math.sin(G.anim*4)*0.1})`
+    ctx.lineWidth = 3
+    ctx.beginPath(); ctx.arc(ct.x, cy-60, pulseR, 0, Math.PI*2); ctx.stroke()
+
+    // arrow indicator
+    const arrowY = cy-82
+    ctx.fillStyle = '#ff6b6b'
+    shadow(6, 0, 2, 'rgba(255,107,107,0.3)')
+    ctx.beginPath(); ctx.moveTo(r.progress, arrowY)
+    ctx.lineTo(r.progress-8, arrowY-12); ctx.lineTo(r.progress+8, arrowY-12); ctx.closePath(); ctx.fill()
+    ctx.beginPath(); ctx.moveTo(r.progress, arrowY)
+    ctx.lineTo(r.progress-6, arrowY+6); ctx.lineTo(r.progress+6, arrowY+6); ctx.closePath(); ctx.fill()
+    noShadow()
+
+    // tap hint
+    ctx.fillStyle = `rgba(255,107,107,${0.5+Math.sin(G.anim*3)*0.2})`
+    ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center'
+    ctx.fillText('👆 点这里！', r.progress, arrowY-18)
+  }
+
+  // === PROGRESS BAR ===
+  const pbw = W-76, pbx = 38, pby = 16
+  shadow(3, 0, 1, 'rgba(0,0,0,0.04)')
+  ctx.fillStyle = '#ede5dd'; roundRect(pbx, pby, pbw, 8, 4); ctx.fill()
+  noShadow()
+  ctx.fillStyle = '#ff8a8a'
+  roundRect(pbx, pby, pbw*(r.hits/r.total), 8, 4); ctx.fill()
+  ctx.fillStyle = '#8d6e63'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'
+  ctx.fillText(`卷 ${r.hits}/${r.total}`, W/2, pby+24)
+  // score
+  ctx.fillStyle = '#5d4037'; ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'right'
+  ctx.fillText(`${G.scores[0]+G.scores[1]}`, W-18, 42)
+  // instruction
+  ctx.fillStyle = '#bcaaa4'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center'
+  ctx.fillText('👆 点击对准标记 · 逐段卷起可丽饼！', W/2, H-14)
+  // stage
+  ctx.fillStyle = '#d7ccc8'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center'
+  ctx.fillText('3/3 · 卷起来', W/2, 53)
+}
+
+function tapRoll() {
+  const r = G.r
+  if (r.done || r.hits>=r.total) return; S.resume()
+  const t = r.targets[r.hits]
+  const diff = Math.abs(r.progress - t.x)
+  let emoji, msg
+  if (diff<6) { emoji='🌟'; msg='完美！'; t.perfect=true; t.hit=true; S.rollPerfect() }
+  else if (diff<18) { emoji='👍'; msg='还行~'; t.hit=true; S.good() }
+  else { emoji='😅'; msg='歪了...'; t.hit=false; S.rollTick() }
+  r.hits++
+  // visual feedback animate
+  if (r.hits>=r.total) {
+    r.done=true
+    const perfs = r.targets.filter(t=>t.perfect).length
+    const hits = r.targets.filter(t=>t.hit).length
+    const scr = Math.min(150, Math.round(perfs/r.total*100 + hits/r.total*50))
+    G.scores[2]=scr; S.stageClear()
+    showOverlay('🎉', '可丽饼卷好啦！', `${scr}分`, 700).then(()=>{ G.transAlpha=0; showResult() })
+  }
+}
+
+// ==============================
+//  OVERLAY
+// ==============================
+let overlayPromise = null
+function showOverlay(emoji, msg, sub, dur=800) {
+  G.ov = { emoji, msg, sub, t:0, dur, active:true }
+  return new Promise(r => { overlayPromise = r })
+}
+
+function drawOverlay() {
+  if (!G.ov || !G.ov.active) return
+  const o = G.ov
+  o.t += G.dt * (1/o.dur*1000)
+  if (o.t >= 1) { o.active=false; if (overlayPromise) { overlayPromise(); overlayPromise=null }; return }
+
+  const a = Math.min(1, o.t*4)
+  ctx.fillStyle = `rgba(0,0,0,${0.2*a})`; ctx.fillRect(0,0,W,H)
+
+  const sc = 0.8 + 0.2*(1-o.t*2)
+  ctx.save(); ctx.translate(W/2, H/2-20); ctx.scale(sc, sc)
+  ctx.globalAlpha = a
+
+  // card
+  shadow(20, 0, 5, 'rgba(0,0,0,0.12)')
+  ctx.fillStyle = '#fff'; roundRect(-65, -45, 130, 90, 22); ctx.fill()
+  noShadow()
+
+  ctx.font = '34px sans-serif'; ctx.textAlign = 'center'
+  ctx.fillText(o.emoji, 0, -8)
+  ctx.fillStyle = '#5d4037'; ctx.font = 'bold 16px sans-serif'
+  ctx.fillText(o.msg, 0, 24)
+  if (o.sub) { ctx.fillStyle = '#a1887f'; ctx.font = '14px sans-serif'; ctx.fillText(o.sub, 0, 44) }
+
+  ctx.restore()
+  ctx.globalAlpha = 1
+}
+
+// ==============================
+//  SCREEN SHAKE
+// ==============================
+let shakeAmt = 0
+function screenShake(a) { shakeAmt = Math.max(shakeAmt, a) }
+
+// ==============================
+//  RESULT
+// ==============================
+function showResult() {
+  G.state = 'result'
+  G.total = G.scores[0]+G.scores[1]+G.scores[2]
+  G.resultT = 0; S.fanfare()
+}
+
+function drawResult() {
+  const t = G.resultT; G.resultT += G.dt*0.8
+  const a = Math.min(1, t*3)
+
+  // bg
+  const bg = ctx.createLinearGradient(0,0,0,H)
+  bg.addColorStop(0,'#fef5ee'); bg.addColorStop(0.5,'#fce8d8'); bg.addColorStop(1,'#fdf0e6')
+  ctx.fillStyle = bg; ctx.fillRect(0,0,W,H)
+
+  ctx.globalAlpha = a
+
+  // bear
+  const bearY = 80 - Math.max(0, 1-t*4)*40
+  ctx.fillStyle = '#fff'
+  shadow(8, 0, 3, 'rgba(0,0,0,0.06)')
+  ctx.beginPath(); ctx.arc(W/2, bearY, 32, 0, Math.PI*2); ctx.fill()
+  noShadow()
+  // ears
+  ctx.fillStyle = '#f5e0cc'; ctx.beginPath(); ctx.arc(W/2-22, bearY-26, 11, 0, Math.PI*2); ctx.fill()
+  ctx.beginPath(); ctx.arc(W/2+22, bearY-26, 11, 0, Math.PI*2); ctx.fill()
+  ctx.fillStyle = '#ffb5b5'; ctx.beginPath(); ctx.arc(W/2-22, bearY-26, 5.5, 0, Math.PI*2); ctx.fill()
+  ctx.beginPath(); ctx.arc(W/2+22, bearY-26, 5.5, 0, Math.PI*2); ctx.fill()
+  // eyes
+  ctx.fillStyle = '#4a3636'; ctx.beginPath(); ctx.arc(W/2-10, bearY-3, 3.5, 0, Math.PI*2); ctx.fill()
+  ctx.beginPath(); ctx.arc(W/2+10, bearY-3, 3.5, 0, Math.PI*2); ctx.fill()
+  // eye shine
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(W/2-8, bearY-5, 1.5, 0, Math.PI*2); ctx.fill()
+  ctx.beginPath(); ctx.arc(W/2+12, bearY-5, 1.5, 0, Math.PI*2); ctx.fill()
+  // mouth
+  const happy = G.total >= 200
+  if (happy) {
+    ctx.fillStyle = '#4a3636'
+    ctx.beginPath(); ctx.arc(W/2, bearY+8, 5, 0.1, Math.PI-0.1); ctx.fill()
+  } else {
+    ctx.strokeStyle = '#4a3636'; ctx.lineWidth = 2; ctx.lineCap = 'round'
+    ctx.beginPath(); ctx.arc(W/2, bearY+12, 6, Math.PI*0.2, Math.PI*0.8); ctx.stroke()
+  }
+  // blush
+  ctx.fillStyle = 'rgba(255,150,150,0.3)'
+  ctx.beginPath(); ctx.ellipse(W/2-18, bearY+4, 7, 4, 0, 0, Math.PI*2); ctx.fill()
+  ctx.beginPath(); ctx.ellipse(W/2+18, bearY+4, 7, 4, 0, 0, Math.PI*2); ctx.fill()
+
+  // rank
+  let rank, label
+  if (G.total>=280) { rank='S'; label='完美可丽饼大师！' }
+  else if (G.total>=200) { rank='A'; label='可丽饼高手！' }
+  else if (G.total>=120) { rank='B'; label='还不错哦！' }
+  else { rank='C'; label='再试一次吧！' }
+
+  const rankY = bearY + 60
+  ctx.font = 'bold 50px sans-serif'; ctx.textAlign = 'center'
+  const rankColors = {s:'#ff6b6b',a:'#ff8a65',b:'#ffb74d',c:'#a1887f'}
+  shadow(8, 0, 0, rankColors[rank.toLowerCase()]+'44')
+  ctx.fillStyle = rankColors[rank.toLowerCase()]; ctx.fillText(rank, W/2, rankY)
+  noShadow()
+  ctx.fillStyle = '#8d6e63'; ctx.font = '14px sans-serif'
+  ctx.fillText(label, W/2, rankY+22)
+
+  // score
+  const scY = rankY + 50
+  ctx.fillStyle = '#5d4037'; ctx.font = 'bold 24px sans-serif'
+  ctx.fillText(`总分: ${G.total}`, W/2, scY)
+
+  // breakdown
+  ctx.fillStyle = '#a1887f'; ctx.font = '12px sans-serif'
+  ctx.fillText(`煎饼 ${G.scores[0]}分  ·  接食材 ${G.scores[1]}分  ·  卷起来 ${G.scores[2]}分`, W/2, scY+22)
+
+  // membership card
+  const cardY = scY + 50
+  shadow(6, 0, 2, 'rgba(0,0,0,0.04)')
+  ctx.fillStyle = '#fff'; roundRect(W/2-120, cardY, 240, 64, 14); ctx.fill()
+  noShadow()
+  ctx.fillStyle = '#bcaaa4'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center'
+  ctx.fillText('📍 粮道街 · 白熊可丽饼屋', W/2, cardY+20)
+  ctx.fillStyle = '#5d4037'; ctx.font = 'bold 17px sans-serif'
+  ctx.fillText('🐻 白熊可丽饼屋', W/2, cardY+42)
+  ctx.fillStyle = '#d7ccc8'; ctx.font = '9px sans-serif'
+  ctx.fillText('到店报"白熊"有惊喜 ✨', W/2, cardY+58)
+
+  // replay button
+  const btnY = cardY + 95
+  const btnH = 46, btnW = 200
+  const bx = W/2 - btnW/2, by = btnY
+  // store button for hit detection
+  G.btnReplay = { x: bx, y: by, w: btnW, h: btnH }
+  shadow(8, 0, 3, 'rgba(255,107,107,0.3)')
+  const btnGrad = gradient(bx, by, 0, btnH, '#ff8a8a', '#ff6b6b')
+  ctx.fillStyle = btnGrad; roundRect(bx, by, btnW, btnH, 24); ctx.fill()
+  noShadow()
+  ctx.fillStyle = '#fff'; ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'center'
+  ctx.fillText('🔄 再来一次', W/2, btnY+29)
+
+  ctx.globalAlpha = 1
+}
+
+// ==============================
+//  TITLE SCREEN (drawn on canvas)
+// ==============================
+function drawTitle() {
+  const bg = ctx.createLinearGradient(0,0,0,H)
+  bg.addColorStop(0,'#ffefe5'); bg.addColorStop(0.3,'#fce4d6'); bg.addColorStop(0.7,'#ffebe0'); bg.addColorStop(1,'#fff8f0')
+  ctx.fillStyle = bg; ctx.fillRect(0,0,W,H)
+
+  // floating decorations
+  const decos = ['🥞','🍓','🍌','✨','🧈','🍫']
+  for (let i=0;i<6;i++) {
+    ctx.globalAlpha = 0.08 + 0.04*Math.sin(G.anim*0.8+i*1.2)
+    ctx.font = '40px sans-serif'; ctx.textAlign = 'center'
+    ctx.fillText(decos[i], 40+i*68, 60+Math.sin(G.anim+i)*20)
+  }
+  ctx.globalAlpha = 1
+
+  // BEAR
+  const bc = W/2, br = 52, by2 = 175
+  // body shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.02)'
+  ctx.beginPath(); ctx.ellipse(bc, by2+50, 40, 10, 0, 0, Math.PI*2); ctx.fill()
+  // body
+  shadow(12, 0, 4, 'rgba(139,90,43,0.08)')
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(bc, by2, br, 0, Math.PI*2); ctx.fill()
+  noShadow()
+  // ears
+  ctx.fillStyle = '#f5e0cc'
+  ctx.beginPath(); ctx.arc(bc-30, by2-42, 16, 0, Math.PI*2); ctx.fill()
+  ctx.beginPath(); ctx.arc(bc+30, by2-42, 16, 0, Math.PI*2); ctx.fill()
+  ctx.fillStyle = '#ffb5b5'
+  ctx.beginPath(); ctx.arc(bc-30, by2-42, 8, 0, Math.PI*2); ctx.fill()
+  ctx.beginPath(); ctx.arc(bc+30, by2-42, 8, 0, Math.PI*2); ctx.fill()
+  // eyes
+  ctx.fillStyle = '#4a3636'
+  ctx.beginPath(); ctx.arc(bc-14, by2-6, 4.5, 0, Math.PI*2); ctx.fill()
+  ctx.beginPath(); ctx.arc(bc+14, by2-6, 4.5, 0, Math.PI*2); ctx.fill()
+  // eye shine
+  ctx.fillStyle = '#fff'
+  ctx.beginPath(); ctx.arc(bc-11, by2-9, 2, 0, Math.PI*2); ctx.fill()
+  ctx.beginPath(); ctx.arc(bc+17, by2-9, 2, 0, Math.PI*2); ctx.fill()
+  // blush
+  ctx.fillStyle = 'rgba(255,150,150,0.25)'
+  ctx.beginPath(); ctx.ellipse(bc-26, by2+4, 9, 5, 0, 0, Math.PI*2); ctx.fill()
+  ctx.beginPath(); ctx.ellipse(bc+26, by2+4, 9, 5, 0, 0, Math.PI*2); ctx.fill()
+  // mouth
+  ctx.strokeStyle = '#4a3636'; ctx.lineWidth = 2; ctx.lineCap = 'round'
+  ctx.beginPath(); ctx.arc(bc, by2+8, 7, 0.15, Math.PI-0.15); ctx.stroke()
+  // chef hat
+  ctx.fillStyle = '#fff'
+  shadow(6, 0, 2, 'rgba(0,0,0,0.06)')
+  ctx.beginPath(); ctx.ellipse(bc, by2-56, 36, 12, 0, 0, Math.PI); ctx.fill()
+  ctx.fillStyle = '#fff'
+  ctx.beginPath(); ctx.arc(bc-18, by2-60, 14, 0, Math.PI*2); ctx.fill()
+  ctx.beginPath(); ctx.arc(bc+18, by2-60, 14, 0, Math.PI*2); ctx.fill()
+  ctx.beginPath(); ctx.arc(bc, by2-66, 16, 0, Math.PI*2); ctx.fill()
+  noShadow()
+  ctx.fillStyle = '#ff8a8a'
+  ctx.fillRect(bc-22, by2-56, 44, 5)
+
+  // TEXT
+  const textY = by2 + 80
+  ctx.fillStyle = '#bcaaa4'; ctx.font = '12px sans-serif'; textAlign = 'center'
+  ctx.fillText('🐻 粮道街 · 白熊可丽饼屋', W/2, textY)
+  ctx.fillStyle = '#5d4037'; ctx.font = 'bold 28px sans-serif'; letterSpacing = '2px'
+  ctx.fillText('可丽饼大挑战', W/2, textY+38)
+  ctx.fillStyle = '#a1887f'; ctx.font = '14px sans-serif'
+  ctx.fillText('煎饼 · 接料 · 卷起', W/2, textY+60)
+
+  // start button
+  const btnW = 200, btnH = 50, btnX = W/2-btnW/2, btnY2 = textY+85
+  G.btnStart = { x:btnX, y:btnY2, w:btnW, h:btnH }
+  shadow(10, 0, 4, 'rgba(255,107,107,0.3)')
+  const sg = gradient(btnX, btnY2, 0, btnH, '#ff8a8a', '#ff6b6b')
+  ctx.fillStyle = sg; roundRect(btnX, btnY2, btnW, btnH, 25); ctx.fill()
+  noShadow()
+  ctx.fillStyle = '#fff'; ctx.font = 'bold 17px sans-serif'; textAlign = 'center'
+  ctx.fillText('🥄 开始制作', W/2, btnY2+32)
+}
+
+// ==============================
+//  INPUT
+// ==============================
+function getGameCoords(e) {
+  const rect = canvas.getBoundingClientRect()
+  const cx = (e.clientX - rect.left) * (W / rect.width)
+  const cy = (e.clientY - rect.top) * (H / rect.height)
+  return { cx, cy }
+}
+function isInside(x,y,r) { return x>=r.x && x<=r.x+r.w && y>=r.y && y<=r.y+r.h }
+
+canvas.addEventListener('touchstart', e=>{
+  e.preventDefault(); S.init(); S.resume()
+  const t = e.touches[0]; const {cx,cy}=getGameCoords(t)
+  handleTap(cx,cy)
+  if (G.state==='catch') G.startX=t.clientX
+},{passive:false})
+canvas.addEventListener('touchmove', e=>{
+  e.preventDefault()
+  if (G.state==='catch') { const t=e.touches[0]; G.tx=t.clientX; catchMove((t.clientX-canvas.getBoundingClientRect().left)*(W/canvas.getBoundingClientRect().width)) }
+},{passive:false})
+canvas.addEventListener('touchend', e=>{e.preventDefault()},{passive:false})
+
+canvas.addEventListener('mousedown', e=>{ S.init(); S.resume(); const {cx,cy}=getGameCoords(e); handleTap(cx,cy) })
+canvas.addEventListener('mousemove', e=>{
+  if (G.state==='catch') catchMove((e.clientX-canvas.getBoundingClientRect().left)*(W/canvas.getBoundingClientRect().width))
+})
+
+function handleTap(cx, cy) {
+  switch(G.state) {
+    case 'title':
+      if (G.btnStart && isInside(cx,cy,G.btnStart)) { S.click(); G.state='fry'; resetG() }
+      break
     case 'fry': tapFry(); break
     case 'catch': break
     case 'roll': tapRoll(); break
+    case 'result':
+      if (G.btnReplay && isInside(cx,cy,G.btnReplay)) { S.click(); resetG() }
+      break
   }
 }
 
-// ==================== GAME LOOP ====================
-function gameLoop(time) {
+// ==============================
+//  MAIN LOOP
+// ==============================
+function loop(time) {
   const dt = Math.min((time - G.lastTime) / 1000, 0.05)
-  G.lastTime = time; G.dt = dt
+  G.lastTime = time; G.dt = dt; G.anim += dt
 
-  if (G.state === 'fry') updateFry(dt)
-  else if (G.state === 'catch') updateCatch(dt)
-  else if (G.state === 'roll') updateRoll(dt)
-  updateHUD()
+  // Update
+  if (G.state==='fry') updateFry(dt)
+  else if (G.state==='catch') updateCatch(dt)
+  else if (G.state==='roll') updateRoll(dt)
 
-  // clear & draw
-  ctx.clearRect(0, 0, W, H)
-  if (G.state === 'fry') drawFry()
-  else if (G.state === 'catch') drawCatch()
-  else if (G.state === 'roll') drawRoll()
+  // Draw
+  ctx.clearRect(0,0,W,H)
 
-  requestAnimationFrame(gameLoop)
+  // Apply shake
+  const sx = (Math.random()-0.5)*shakeAmt, sy = (Math.random()-0.5)*shakeAmt
+  shakeAmt *= 0.9; if (shakeAmt<0.5) shakeAmt=0
+  ctx.save(); ctx.translate(sx, sy)
+
+  switch(G.state) {
+    case 'title': drawTitle(); break
+    case 'fry': drawFry(); break
+    case 'catch': drawCatch(); break
+    case 'roll': drawRoll(); break
+    case 'result': drawResult(); break
+  }
+
+  // Overlay
+  drawOverlay()
+
+  ctx.restore()
+
+  requestAnimationFrame(loop)
 }
 
-// ==================== INIT ====================
-$('startBtn').addEventListener('click', () => {
-  Sound.init(); Sound.resume(); Sound.click()
-  titleScreen.classList.remove('active'); gameScreen.classList.add('active')
-  resizeCanvas(); resetGame(); G.lastTime = performance.now()
-  requestAnimationFrame(gameLoop)
-})
-
-$('replayBtn').addEventListener('click', () => {
-  Sound.init(); Sound.resume(); Sound.click()
-  resultScreen.classList.remove('active'); gameScreen.classList.add('active')
-  bgItems = []; resetGame()
-})
-
-window.addEventListener('resize', resizeCanvas)
-setupInput()
-resizeCanvas()
+// ==============================
+//  BOOT
+// ==============================
+resize()
+G.lastTime = performance.now()
+requestAnimationFrame(loop)
 </script>
 </body>
 </html>
