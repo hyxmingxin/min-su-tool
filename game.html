@@ -15,19 +15,22 @@ canvas{display:block;margin:auto}
 <canvas id="c"></canvas>
 <script>
 // ==============================
-//  CANVAS SETUP
+//  CANVAS SETUP — fills any screen
 // ==============================
-const W = 400, H = 700
 const canvas = document.getElementById('c')
 const ctx = canvas.getContext('2d')
+let W = 400, H = 700 // base width fixed, height adapts to screen
 let gScale = 1
+
 function resize() {
   const vw = window.innerWidth, vh = window.innerHeight
-  const s = Math.min(vw / W, vh / H)
   const dpr = Math.min(window.devicePixelRatio||1, 2)
+  // fill entire screen — W stays 400, H adapts to actual ratio
+  W = 400
+  H = Math.max(600, Math.round(W * vh / vw))
   canvas.width = W * dpr; canvas.height = H * dpr
-  canvas.style.width = Math.floor(W * s) + 'px'
-  canvas.style.height = Math.floor(H * s) + 'px'
+  canvas.style.width = '100vw'; canvas.style.height = '100vh'
+  canvas.style.margin = '0'
   gScale = dpr
   ctx.setTransform(dpr,0,0,dpr,0,0)
 }
@@ -713,8 +716,8 @@ function drawResult() {
 
   ctx.globalAlpha = a
 
-  // bear
-  const bearY = 80 - Math.max(0, 1-t*4)*40
+  // bear (proportional)
+  const bearY = Math.round(H * 0.10) - Math.max(0, 1-t*4)*40
   ctx.fillStyle = '#fff'
   shadow(8, 0, 3, 'rgba(0,0,0,0.06)')
   ctx.beginPath(); ctx.arc(W/2, bearY, 32, 0, Math.PI*2); ctx.fill()
@@ -769,8 +772,8 @@ function drawResult() {
   ctx.fillStyle = '#a1887f'; ctx.font = '12px sans-serif'
   ctx.fillText(`煎饼 ${G.scores[0]}分  ·  接食材 ${G.scores[1]}分  ·  卷起来 ${G.scores[2]}分`, W/2, scY+22)
 
-  // membership card
-  const cardY = scY + 50
+  // membership card (proportional)
+  const cardY = Math.min(scY + 50, Math.round(H * 0.60))
   shadow(6, 0, 2, 'rgba(0,0,0,0.04)')
   ctx.fillStyle = '#fff'; roundRect(W/2-120, cardY, 240, 64, 14); ctx.fill()
   noShadow()
@@ -814,8 +817,8 @@ function drawTitle() {
   }
   ctx.globalAlpha = 1
 
-  // BEAR
-  const bc = W/2, br = 52, by2 = 175
+  // BEAR (proportional to screen)
+  const bc = W/2, br = 52, by2 = Math.round(H * 0.22)
   // body shadow
   ctx.fillStyle = 'rgba(0,0,0,0.02)'
   ctx.beginPath(); ctx.ellipse(bc, by2+50, 40, 10, 0, 0, Math.PI*2); ctx.fill()
@@ -857,8 +860,8 @@ function drawTitle() {
   ctx.fillStyle = '#ff8a8a'
   ctx.fillRect(bc-22, by2-56, 44, 5)
 
-  // TEXT
-  const textY = by2 + 80
+  // TEXT (proportional)
+  const textY = by2 + Math.round(H * 0.12)
   ctx.fillStyle = '#bcaaa4'; ctx.font = '12px sans-serif'; textAlign = 'center'
   ctx.fillText('🐻 粮道街 · 白熊可丽饼屋', W/2, textY)
   ctx.fillStyle = '#5d4037'; ctx.font = 'bold 28px sans-serif'; letterSpacing = '2px'
@@ -867,7 +870,7 @@ function drawTitle() {
   ctx.fillText('煎饼 · 接料 · 卷起', W/2, textY+60)
 
   // start button
-  const btnW = 200, btnH = 50, btnX = W/2-btnW/2, btnY2 = textY+85
+  const btnW = 200, btnH = 50, btnX = W/2-btnW/2, btnY2 = textY + Math.round(H * 0.10)
   G.btnStart = { x:btnX, y:btnY2, w:btnW, h:btnH }
   shadow(10, 0, 4, 'rgba(255,107,107,0.3)')
   const sg = gradient(btnX, btnY2, 0, btnH, '#ff8a8a', '#ff6b6b')
