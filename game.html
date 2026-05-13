@@ -280,7 +280,7 @@ function tF(){
   if(vl>=P1&&vl<=P2){em='🌟';msg='完美翻面！';sc=100;S.pf()}else if(vl>=F1&&vl<=F2){em='👍';msg='还不错~';sc=60;S.gd()}else{em='😅';msg='火候不对...';sc=10;S.ms()}
   f.ts+=sc;f.fc++;f.sp=(0.5+Math.random()*0.12)*(1+f.fc*0.08);f.fl=true;S.fl()
   ov(em,msg,sc>0?`+${sc} (${f.ts}/300)`:'',800,function(){
-    if(f.ts>=300){f.dn=true;G.sc[0]=300;S.sc();ov('🍳','煎饼通关！','300分',700,function(){G.st=1;G.s='catch';const c=G.c;c.t=12;c.is=[];c.st=0;c.px=200;c.tx=200;c.pa=[];c.co=0;c.mc=0;c.sc=0;c.dn=false;ov('🎯','接食材！','左右滑动接住食材',600)})}
+    if(f.ts>=300){f.dn=true;G.sc[0]=300;S.sc();ov('🍳','煎饼通关！','300分',700,function(){G.st=1;G.s='catch';const c=G.c;c.t=12;c.is=[{x:60,y:150,n:'草莓',c:'#ef5350',p:30,sp:120,ca:false,wb:1.2},{x:180,y:80,n:'奶油',c:'#fff9c4',p:20,sp:140,ca:false,wb:3.8},{x:300,y:220,n:'星星',c:'#ffd700',p:15,sp:100,ca:false,wb:5.5}];c.st=0.3;c.px=200;c.tx=200;c.pa=[];c.co=0;c.mc=0;c.sc=0;c.dn=false;ov('🎯','接食材！','左右滑动接住食材',600)})}
     else{f.fl=false;f.ft=0}
   })
 }
@@ -299,8 +299,10 @@ function udC(dt){
 }
 function dwC(){
   const c=G.c
-  const bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#fef5ee');bg.addColorStop(.5,'#fce8d8');bg.addColorStop(1,'#fdf0e6')
+  const bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#fef0ec');bg.addColorStop(.5,'#fde3d8');bg.addColorStop(1,'#fef5ee')
   ctx.fillStyle=bg;ctx.fillRect(0,0,W,H)
+  /* 食材背景装饰 */
+  for(let i=0;i<4;i++){ctx.fillStyle=`rgba(255,220,210,${0.08+Math.sin(G.an*0.6+i*1.2)*0.04})`;ctx.beginPath();ctx.arc(50+i*100,38+Math.sin(i*2)*12,18,0,Math.PI*2);ctx.fill()}
   for(const it of c.is){if(it.ca)continue;ctx.save();ctx.translate(it.x+Math.sin(it.wb)*2,it.y)
     switch(it.n){
       case'草莓':sh(6,1,2,'rgba(239,83,80,0.3)');ctx.fillStyle='#ef5350';ctx.beginPath();ctx.moveTo(0,-15);ctx.lineTo(-12,10);ctx.lineTo(12,10);ctx.closePath();ctx.fill();ns()
@@ -317,8 +319,13 @@ function dwC(){
     ctx.restore()
   }
   for(const p of c.pa){ctx.globalAlpha=p.l;ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y,p.r*p.l,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1}
-  const px=c.px,py=H-80;sh(8,2,4,'rgba(0,0,0,0.06)');ctx.fillStyle='#f5f5f0';ctx.beginPath();ctx.ellipse(px,py,58,14,0,0,Math.PI*2);ctx.fill();ns()
-  ctx.strokeStyle='#e0d5c5';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(px,py,58,14,0,0,Math.PI*2);ctx.stroke()
+  /* 接食材的碗 - 加强可见度 */
+  const px=c.px,py=H-80;
+  sh(10,2,5,'rgba(0,0,0,0.12)');
+  ctx.fillStyle='#c4a882';ctx.beginPath();ctx.ellipse(px,py+3,62,17,0,0,Math.PI*2);ctx.fill()
+  ctx.fillStyle='#dcc4a0';ctx.beginPath();ctx.ellipse(px,py,58,14,0,0,Math.PI*2);ctx.fill()
+  ctx.fillStyle='#e8d5b8';ctx.beginPath();ctx.ellipse(px,py-1,48,10,0,0,Math.PI*2);ctx.fill()
+  ns();ctx.strokeStyle='#b89570';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(px,py-1,48,10,0,0,Math.PI*2);ctx.stroke()
   const bw=W-76,bx=38,by=16;sh(3,0,1,'rgba(0,0,0,0.04)');ctx.fillStyle='#ede5dd';roundRect(bx,by,bw,9,5);ctx.fill();ns()
   const pt=c.t/12;ctx.fillStyle=pt>0.5?'#81c784':pt>0.25?'#ffb74d':'#e57373';roundRect(bx,by,bw*pt,9,5);ctx.fill()
   ctx.fillStyle='#8d6e63';ctx.font='bold 11px sans-serif';ctx.textAlign='center';ctx.fillText(`⏱ ${Math.ceil(c.t)}s`,W/2,by+24)
