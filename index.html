@@ -45,6 +45,8 @@ h1{font-size:22px;font-weight:600;color:#1a1510;margin-bottom:4px;letter-spacing
 .input-group .extracted.show{display:flex;align-items:center;gap:8px}
 
 /* 按钮 */
+.sel{font-size:10px;color:#8a7a6a;cursor:pointer;margin-left:8px;text-decoration:underline;user-select:none}
+.sel:active{opacity:0.5}
 .btn-row{display:flex;gap:12px;margin-bottom:16px}
 .btn{
   flex:1;padding:14px;border:none;border-radius:10px;font-size:15px;font-weight:600;
@@ -83,7 +85,7 @@ h1{font-size:22px;font-weight:600;color:#1a1510;margin-bottom:4px;letter-spacing
   <!-- 密码输入 -->
   <div class="input-row">
     <div class="input-group">
-      <label>🚪 204大门通知 <span>（Ukey智能锁）</span></label>
+      <label>🚪 204大门通知 <span>（Ukey智能锁）</span><span class="sel" onclick="document.getElementById('doorInput').select()">全选</span></label>
       <textarea id="doorInput" placeholder="粘贴Ukey通知…"></textarea>
       <div class="extracted" id="doorResult">
         <span>🔑 大门密码：</span>
@@ -91,7 +93,7 @@ h1{font-size:22px;font-weight:600;color:#1a1510;margin-bottom:4px;letter-spacing
       </div>
     </div>
     <div class="input-group">
-      <label>🚪 房间门通知 <span>（通通锁）</span></label>
+      <label>🚪 房间门通知 <span>（通通锁）</span><span class="sel" onclick="document.getElementById('roomInput').select()">全选</span></label>
       <textarea id="roomInput" placeholder="粘贴通通锁通知…"></textarea>
       <div class="extracted" id="roomResult">
         <span>🔑 房间密码：</span>
@@ -238,17 +240,15 @@ let currentRoom = 1
 let currentDoorPw = ''
 let currentRoomPw = ''
 
-// 房间切换
-room1Tab.addEventListener('click', () => {
-  currentRoom = 1
-  room1Tab.classList.add('active')
-  room2Tab.classList.remove('active')
-})
-room2Tab.addEventListener('click', () => {
-  currentRoom = 2
-  room2Tab.classList.add('active')
-  room1Tab.classList.remove('active')
-})
+// 房间切换（清除上次生成的文案）
+function switchRoom(num) {
+  currentRoom = num
+  document.querySelectorAll('.room-tab').forEach(t => t.classList.toggle('active', t.dataset.room == num))
+  output.classList.remove('show')
+  output.innerHTML = ''
+}
+room1Tab.addEventListener('click', () => switchRoom(1))
+room2Tab.addEventListener('click', () => switchRoom(2))
 
 // 实时提取
 function onInput() {
